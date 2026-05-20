@@ -180,6 +180,7 @@ const FREQ_OPTS=[
 const FREQ_LABELS=Object.fromEntries(FREQ_OPTS);
 const FREQ_CSS={q:'fq','2w':'f2w',h:'fh','2h':'f2h','3h':'f3h',m:'fm','2m':'f2m','3m':'f3m',s:'fs',a:'fa'};
 const FREQ_W={q:7,'2w':3.5,h:1,'2h':.5,'3h':.33,m:.25,'2m':.12,'3m':.08,s:.04,a:.02};
+const FREQ_DAYS={q:1,'2w':3,h:7,'2h':14,'3h':21,m:30,'2m':60,'3m':90,s:180,a:365};
 const WHO_OPTS=[
   {v:'william',label:'William',short:'W',cls:'av-w',wcls:'sw'},
   {v:'pref-w',label:'Plutôt W.',short:'W·',cls:'av-pw',wcls:'spw'},
@@ -201,13 +202,13 @@ const DEFAULT_CATS=[
   {id:'admin',label:'Administratif',color:'#f5a623'},
 ];
 const DEFAULT_TASKS=[
-  {id:1,name:'Faire la vaisselle',cat:'cuisine',freq:'q',who:'juliette',load:2,days:'tous'},
-  {id:2,name:'Essuyer les plans de travail',cat:'cuisine',freq:'q',who:'juliette',load:1,days:'tous'},
-  {id:3,name:'Préparer les repas',cat:'cuisine',freq:'q',who:'juliette',load:3,days:'tous'},
+  {id:1,name:'Faire la vaisselle',cat:'cuisine',freq:'q',who:'both',load:2,days:'tous'},
+  {id:2,name:'Essuyer les plans de travail',cat:'cuisine',freq:'q',who:'both',load:1,days:'tous'},
+  {id:3,name:'Préparer les repas',cat:'cuisine',freq:'q',who:'both',load:3,days:'tous'},
   {id:4,name:'Faire les courses',cat:'cuisine',freq:'h',who:'both',load:2,days:'samedi'},
-  {id:5,name:'Nettoyer le réfrigérateur',cat:'cuisine',freq:'m',who:'juliette',load:2,days:'tous'},
-  {id:6,name:'Nettoyer le four',cat:'cuisine',freq:'m',who:'juliette',load:3,days:'tous'},
-  {id:7,name:'Dégraisser la hotte',cat:'cuisine',freq:'m',who:'juliette',load:2,days:'tous'},
+  {id:5,name:'Nettoyer le réfrigérateur',cat:'cuisine',freq:'m',who:'both',load:2,days:'tous'},
+  {id:6,name:'Nettoyer le four',cat:'cuisine',freq:'m',who:'both',load:3,days:'tous'},
+  {id:7,name:'Dégraisser la hotte',cat:'cuisine',freq:'m',who:'both',load:2,days:'tous'},
   {id:10,name:"Passer l'aspirateur",cat:'menage',freq:'h',who:'both',load:2,days:'tous'},
   {id:11,name:'Serpillière / laver les sols',cat:'menage',freq:'h',who:'both',load:2,days:'tous'},
   {id:12,name:'Poussière chambre',cat:'menage',freq:'h',who:'both',load:1,days:'tous'},
@@ -216,23 +217,23 @@ const DEFAULT_TASKS=[
   {id:15,name:'Changer les draps',cat:'menage',freq:'h',who:'both',load:2,days:'tous'},
   {id:16,name:'Faire une lessive',cat:'menage',freq:'h',who:'both',load:1,days:'tous'},
   {id:17,name:'Plier et ranger le linge',cat:'menage',freq:'h',who:'both',load:2,days:'tous'},
-  {id:18,name:'Sortir poubelle noire',cat:'menage',freq:'h',who:'william',load:1,days:'lundi'},
-  {id:19,name:'Sortir poubelle jaune',cat:'menage',freq:'h',who:'william',load:1,days:'lundi'},
-  {id:20,name:'Sortir poubelle verre',cat:'menage',freq:'m',who:'william',load:1,days:'lundi'},
-  {id:21,name:'Vider poubelle cuisine',cat:'menage',freq:'q',who:'william',load:1,days:'tous'},
-  {id:22,name:'Tondre la pelouse',cat:'menage',freq:'h',who:'william',load:4,days:'tous'},
+  {id:18,name:'Sortir poubelle noire',cat:'menage',freq:'h',who:'both',load:1,days:'lundi'},
+  {id:19,name:'Sortir poubelle jaune',cat:'menage',freq:'h',who:'both',load:1,days:'lundi'},
+  {id:20,name:'Sortir poubelle verre',cat:'menage',freq:'m',who:'both',load:1,days:'lundi'},
+  {id:21,name:'Vider poubelle cuisine',cat:'menage',freq:'q',who:'both',load:1,days:'tous'},
+  {id:22,name:'Tondre la pelouse',cat:'menage',freq:'h',who:'both',load:4,days:'tous'},
   {id:30,name:'Change et hygiène bébé',cat:'bebe',freq:'q',who:'both',load:2,days:'tous'},
   {id:31,name:'Repas / biberon bébé',cat:'bebe',freq:'q',who:'both',load:2,days:'tous'},
   {id:32,name:'Bain de bébé',cat:'bebe',freq:'q',who:'both',load:2,days:'tous'},
   {id:33,name:'Coucher bébé',cat:'bebe',freq:'q',who:'both',load:3,days:'tous'},
   {id:34,name:'Préparer sac crèche',cat:'bebe',freq:'q',who:'both',load:1,days:'semaine'},
-  {id:35,name:'Fiche de paie de la nounou',cat:'bebe',freq:'m',who:'william',load:2,days:'tous'},
+  {id:35,name:'Fiche de paie de la nounou',cat:'bebe',freq:'m',who:'both',load:2,days:'tous'},
   {id:36,name:'Rdv pédiatre',cat:'bebe',freq:'m',who:'both',load:2,days:'tous'},
   {id:37,name:'Stock couches / lingettes',cat:'bebe',freq:'h',who:'both',load:1,days:'tous'},
   {id:50,name:'Ouvrir et trier le courrier',cat:'admin',freq:'h',who:'both',load:1,days:'tous'},
-  {id:51,name:'Payer les factures',cat:'admin',freq:'m',who:'william',load:2,days:'tous'},
-  {id:52,name:'Vérifier le compte bancaire',cat:'admin',freq:'h',who:'william',load:2,days:'tous'},
-  {id:53,name:"Déclaration d'impôts",cat:'admin',freq:'a',who:'william',load:4,days:'tous'},
+  {id:51,name:'Payer les factures',cat:'admin',freq:'m',who:'both',load:2,days:'tous'},
+  {id:52,name:'Vérifier le compte bancaire',cat:'admin',freq:'h',who:'both',load:2,days:'tous'},
+  {id:53,name:"Déclaration d'impôts",cat:'admin',freq:'a',who:'both',load:4,days:'tous'},
   {id:54,name:'Gérer remboursements mutuelle',cat:'admin',freq:'m',who:'both',load:2,days:'tous'},
 ];
 
@@ -240,7 +241,8 @@ const DEFAULT_TASKS=[
 let tasks,cats,weekPlans,completions,nextId,nextCatId;
 let curView='agenda',curDay=DAYS[((new Date().getDay()+6)%7)];
 let editId=null,addCat=null,addCatOpen=false,selCatColor=CAT_COLORS[5];
-let statPeriod='semaine',planAddDay=null,planAddWho='william';
+let statPeriod='semaine',planAddDay=null,planAddWho='william',showAllTasks=false;
+let manualLastDone={};
 
 // ── STORAGE ────────────────────────────────────────────────────────────────
 function load(){
@@ -250,6 +252,7 @@ function load(){
   completions=JSON.parse(localStorage.getItem('pm4_c')||'[]');
   nextId=+localStorage.getItem('pm4_n')||100;
   nextCatId=+localStorage.getItem('pm4_nc')||10;
+  manualLastDone=JSON.parse(localStorage.getItem('pm4_mld')||'{}');
   // Migrate old 'moi' → 'william'
   tasks.forEach(t=>{if(t.who==='moi')t.who='william'});
 }
@@ -260,6 +263,7 @@ function save(){
   localStorage.setItem('pm4_c',JSON.stringify(completions));
   localStorage.setItem('pm4_n',nextId);
   localStorage.setItem('pm4_nc',nextCatId);
+  localStorage.setItem('pm4_mld',JSON.stringify(manualLastDone));
 }
 
 // ── UTILS ──────────────────────────────────────────────────────────────────
@@ -274,6 +278,31 @@ function getPlan(){return getWkData().plan}
 function getExtras(){return getWkData().extras}
 function assigned(id){const p=getPlan()[id];return(p&&p!=='skip')?p:'william'}
 
+function getLastDone(taskId){
+  const comps=completions.filter(c=>c.taskId===taskId).map(c=>c.date).sort();
+  const lastComp=comps[comps.length-1]||null;
+  const manual=manualLastDone[taskId]||null;
+  if(lastComp&&manual) return lastComp>manual?lastComp:manual;
+  return lastComp||manual||null;
+}
+function isDue(task,refDate=new Date()){
+  const days=FREQ_DAYS[task.freq]||1;
+  const last=getLastDone(task.id);
+  if(!last) return true;
+  return Math.floor((refDate-new Date(last))/864e5)>=days;
+}
+function nextDueStr(task){
+  const last=getLastDone(task.id);if(!last)return null;
+  const d=new Date(last);
+  d.setDate(d.getDate()+(FREQ_DAYS[task.freq]||1));
+  const diff=Math.ceil((d-new Date())/864e5);
+  if(diff<=0) return 'Aujourd\'hui';
+  if(diff===1) return 'Demain';
+  if(diff<7) return 'Dans '+diff+' j.';
+  if(diff<32) return 'Dans '+Math.round(diff/7)+' sem.';
+  if(diff<365) return 'Dans '+Math.round(diff/30)+' mois';
+  return 'Dans '+Math.round(diff/365)+' an(s)';
+}
 function dots(n){
   let h='<div class="load-dots">';
   for(let i=1;i<=5;i++) h+=`<div class="ld${i<=n?' on l'+i:''}"></div>`;
@@ -312,21 +341,31 @@ function renderAgenda(){
   const todayIdx=(new Date().getDay()+6)%7;
   let strip='<div class="day-strip">';
   DAYS.forEach((d,i)=>{
-    const hasT=tasksForDay(d).length>0,isToday=i===todayIdx;
+    const hasT=tasksForDay(d).filter(t=>isDue(t)).length>0,isToday=i===todayIdx;
     strip+=`<div class="day-pill${d===curDay?' active':''}${hasT?' has-t':''}" onclick="switchDay('${d}')">
       <span class="dp-letter">${d.slice(0,2)}</span>
       <span class="dp-num" style="${isToday?'color:var(--acc2)':''}">${isToday?'•':i+1}</span>
       <span class="dp-dot"></span></div>`;
   });strip+='</div>';
-  const dt=tasksForDay(curDay);
-  const dc=dt.filter(t=>isDone(t.id)).length;
-  const pct=dt.length?Math.round(dc/dt.length*100):0;
+  const allDayT=tasksForDay(curDay);
+  const dueTasks=showAllTasks?allDayT:allDayT.filter(t=>isDue(t));
+  const notDueTasks=showAllTasks?[]:allDayT.filter(t=>!isDue(t));
+  const dc=dueTasks.filter(t=>isDone(t.id)).length;
+  const pct=dueTasks.length?Math.round(dc/dueTasks.length*100):0;
   const prog=`<div class="prog-wrap">
-    <div class="prog-top"><span>${DAYS_FULL[DAYS.indexOf(curDay)]}</span><span>${dc}/${dt.length} — ${pct}%</span></div>
+    <div class="prog-top">
+      <span>${DAYS_FULL[DAYS.indexOf(curDay)]}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="showAllTasks=!showAllTasks;render()" style="background:none;border:1px solid var(--bdr2);border-radius:20px;color:var(--txt2);font-size:10px;padding:2px 8px;cursor:pointer;font-family:'DM Sans',sans-serif">${showAllTasks?'Voir à faire':'Tout voir'}</button>
+        <span style="font-size:12px;color:var(--txt2)">${dc}/${dueTasks.length} — ${pct}%</span>
+      </div>
+    </div>
     <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div></div>`;
   let secs='';
+  if(!dueTasks.length&&!notDueTasks.length){secs='<div class="empty"><div class="empty-icon">✨</div>Aucune tâche ce jour</div>';}
+  else if(!dueTasks.length&&!showAllTasks){secs='<div class="empty"><div class="empty-icon">🎉</div>Toutes les tâches sont à jour !<br><span style="font-size:13px">Cliquez "Tout voir" pour afficher les prochaines échéances.</span></div>';}
   cats.forEach(cat=>{
-    const ct=dt.filter(t=>t.cat===cat.id);if(!ct.length)return;
+    const ct=dueTasks.filter(t=>t.cat===cat.id);if(!ct.length)return;
     const cd=ct.filter(t=>isDone(t.id)).length;
     secs+=`<div class="section" id="as_${cat.id}">
       <div class="section-head" onclick="toggleSec('as_${cat.id}')">
@@ -341,7 +380,21 @@ function renderAgenda(){
         <div class="tright">${dots(t.load)}${avFor(who)}</div></div>`;
     });secs+='</div></div>';
   });
-  if(!dt.length)secs='<div class="empty"><div class="empty-icon">✨</div>Aucune tâche ce jour</div>';
+  // Not yet due section
+  if(notDueTasks.length){
+    secs+=`<div class="section" id="as_notdue">
+      <div class="section-head" onclick="toggleSec('as_notdue')">
+        <div class="sec-label"><span class="sec-dot" style="background:var(--txt3)"></span>Pas encore dues</div>
+        <div style="display:flex;align-items:center"><span style="font-size:11px;color:var(--txt3)">${notDueTasks.length}</span><span class="chev">›</span></div>
+      </div><div class="task-list">`;
+    notDueTasks.forEach(t=>{
+      const nd=nextDueStr(t);
+      secs+=`<div class="task-card" style="opacity:.45;cursor:default">
+        <div class="tcheck"></div>
+        <span class="tname">${t.name}</span>
+        <div class="tright">${nd?`<span style="font-size:10px;color:var(--teal);background:rgba(62,207,178,.1);padding:2px 7px;border-radius:20px">${nd}</span>`:''}${avFor(assigned(t.id))}</div></div>`;
+    });secs+='</div></div>';
+  }
   document.getElementById('view-agenda').innerHTML=strip+prog+secs;
 }
 function switchDay(d){curDay=d;render()}
@@ -433,9 +486,11 @@ function buildForm(t,mode,catId){
     <div class="who-5 mg-b" id="${fid}_who">
       ${WHO_OPTS.map(o=>`<button class="w5${who===o.v?' '+o.wcls:''}" onclick="pickWho(this,'${o.v}','${fid}')" title="${o.label}">${o.short}</button>`).join('')}
     </div>
-    <label class="fl">Niveau de galère : <span id="${fid}_lv">${loadV}/5</span></label>
+    <label class="fl">Charge mentale : <span id="${fid}_lv">${loadV}/5</span></label>
     <input type="range" class="load-slider mg-b" id="${fid}_load" min="1" max="5" step="1" value="${loadV}"
       oninput="document.getElementById('${fid}_lv').textContent=this.value+'/5'">
+    <label class="fl">Derni\u00e8re r\u00e9alisation</label>
+    <input type="date" class="fi mg-b" id="${fid}_lastdone" value="${t?getLastDone(t.id)||'':''}">    
     <div class="form-actions">
       ${mode==='edit'
         ?`<button class="btn-save" onclick="saveEdit(${t.id})">Enregistrer</button>
@@ -466,6 +521,8 @@ function saveEdit(id){
   t.days=document.getElementById('ef_days').value;
   t.load=+document.getElementById('ef_load').value;
   t.who=getWho('ef');
+  const ld=document.getElementById('ef_lastdone')?.value;
+  if(ld) manualLastDone[t.id]=ld; else delete manualLastDone[t.id];
   editId=null;save();toast('Enregistré !');renderTasks();
 }
 function delTask(id){
@@ -513,7 +570,7 @@ function renderPlanning(){
     html+=`<div style="padding:32px 20px;text-align:center;color:var(--txt2)">
       <div style="font-size:36px;margin-bottom:12px">🗓</div>
       <div style="font-weight:500;margin-bottom:8px">Planning vide</div>
-      <div style="font-size:13px;line-height:1.6">Cliquez "Auto-répartir" pour générer la semaine automatiquement selon les préférences et la Niveau de galère. Vous pouvez ensuite tout ajuster.</div>
+      <div style="font-size:13px;line-height:1.6">Cliquez "Auto-répartir" pour générer la semaine automatiquement selon les préférences et la charge mentale. Vous pouvez ensuite tout ajuster.</div>
     </div>`;
     document.getElementById('view-planning').innerHTML=html;return;
   }
@@ -690,7 +747,7 @@ function renderStats(){
       </div>
       <div style="font-size:11px;color:var(--txt2);margin-bottom:3px">Tâches</div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.round(comps.length/maxC*100)}%;background:${color}"></div></div>
-      <div style="font-size:11px;color:var(--txt2);margin:6px 0 3px">Niveau de galère</div>
+      <div style="font-size:11px;color:var(--txt2);margin:6px 0 3px">Charge mentale</div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.round(load/maxL*100)}%;background:${color};opacity:.65"></div></div>
       ${top.length?`<div style="margin-top:10px;font-size:11px;color:var(--txt2)">Top : ${top.map(t=>`<span style="background:var(--surf2);padding:2px 8px;border-radius:20px;margin-right:4px;display:inline-block;margin-top:4px">${t.name} ×${t.n}</span>`).join('')}</div>`:''}
     </div>`;
@@ -700,7 +757,7 @@ function renderStats(){
   const totL=wL+jL;const wPct=totL?Math.round(wL/totL*100):50;
   const bal=Math.abs(wPct-50)<=12;
   html+=`<div class="pcard">
-    <div style="font-size:12px;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Équilibre Niveau de galère</div>
+    <div style="font-size:12px;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Équilibre charge mentale</div>
     <div style="display:flex;height:12px;border-radius:12px;overflow:hidden;margin-bottom:6px">
       <div style="width:${wPct}%;background:var(--acc);transition:width .5s"></div>
       <div style="flex:1;background:var(--pink)"></div>
