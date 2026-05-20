@@ -348,55 +348,68 @@ function render(){
 // ── AGENDA ─────────────────────────────────────────────────────────────────
 
 function renderWeekChart(){
+  const plan=getPlan();
   const data=DAYS.map((day,i)=>{
     const tDate=getTargetDate(day);
     const dt=tasksForDay(day).filter(t=>isDue(t,tDate));
-    return{day,count:dt.length,pts:dt.reduce((s,t)=>s+t.load,0),done:dt.filter(t=>isDone(t.id,day)).length};
+    let wP=0,jP=0,wC=0,jC=0;
+    dt.forEach(t=>{
+      const a=plan[t.id];
+      if(a==='skip') return;
+      if(a==='william'||(!a&&(t.who==='william'||t.who==='pref-w'))){wP+=t.load;wC++;}
+      else{jP+=t.load;jC++;}
+    });
+    return{day,wP,jP,wC,jC,done:dt.filter(t=>isDone(t.id,day)).length,total:dt.length};
   });
-  const maxC=Math.max(...data.map(d=>d.count),1);
-  const maxP=Math.max(...data.map(d=>d.pts),1);
+  const maxP=Math.max(...data.map(d=>d.wP+d.jP),1);
   const todayIdx=(new Date().getDay()+6)%7;
-  const W=340,H=116,padT=14,padB=30,padH=6;
+  const W=340,H=118,padT=16,padB=30,padH=5;
   const colW=(W-padH*2)/7;
   const bW=colW*0.33;
   const chartH=H-padT-padB;
   let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">`;
-  // Week totals
-  const totC=data.reduce((a,d)=>a+d.count,0);
-  const totP=data.reduce((a,d)=>a+d.pts,0);
-  s+=`<text x="${W-2}" y="9" text-anchor="end" fill="rgba(240,239,248,0.35)" font-size="8.5" font-family="DM Sans,sans-serif">Semaine : ${totC} tâches · ${totP} pts de galère</text>`;
   // Legend
-  s+=`<rect x="2" y="3" width="7" height="7" rx="2" fill="rgba(124,106,247,0.6)"/>`;
-  s+=`<text x="12" y="9.5" fill="rgba(240,239,248,0.45)" font-size="8.5" font-family="DM Sans,sans-serif">Tâches</text>`;
-  s+=`<rect x="50" y="3" width="7" height="7" rx="2" fill="rgba(240,112,112,0.6)"/>`;
-  s+=`<text x="60" y="9.5" fill="rgba(240,239,248,0.45)" font-size="8.5" font-family="DM Sans,sans-serif">Pts galère</text>`;
+  s+=`<rect x="2" y="3" width="7" height="7" rx="2" fill="rgba(124,106,247,0.7)"/>`;
+  s+=`<text x="12" y="9.5" fill="rgba(240,239,248,0.5)" font-size="8.5" font-family="DM Sans,sans-serif">William</text>`;
+  s+=`<rect x="54" y="3" width="7" height="7" rx="2" fill="rgba(232,125,184,0.7)"/>`;
+  s+=`<text x="64" y="9.5" fill="rgba(240,239,248,0.5)" font-size="8.5" font-family="DM Sans,sans-serif">Juliette</text>`;
+  // Week totals
+  const totW=data.reduce((a,d)=>a+d.wP,0),totJ=data.reduce((a,d)=>a+d.jP,0);
+  s+=`<text x="${W-2}" y="9.5" text-anchor="end" fill="rgba(240,239,248,0.35)" font-size="8.5" font-family="DM Sans,sans-serif">W: ${totW} pts · J: ${totJ} pts</text>`;
   data.forEach((d,i)=>{
     const cx=padH+i*colW+colW/2;
-    const isToday=i===todayIdx;
-    const isSel=DAYS[i]===curDay;
-    // Clickable bg
+    const isToday=i===todayIdx,isSel=DAYS[i]===curDay;
+    // BG highlight
     s+=`<rect x="${padH+i*colW+1}" y="${padT-4}" width="${colW-2}" height="${chartH+10}" rx="6" fill="${isSel?'rgba(124,106,247,0.1)':'transparent'}" style="cursor:pointer" onclick="switchDay('${DAYS[i]}')"/>`;
-    // Tasks bar
-    if(d.count){
-      const bH=Math.max(d.count/maxC*chartH,5);
+    // William bar (left)
+    if(d.wP){
+      const bH=Math.max(d.wP/maxP*chartH,4);
       const by=padT+chartH-bH;
-      s+=`<rect x="${cx-bW-1}" y="${by}" width="${bW}" height="${bH}" rx="2.5" fill="${isSel?'#7c6af7':isToday?'#a899fa':'rgba(124,106,247,0.38)'}"/>`;
-      s+=`<text x="${cx-bW/2-1}" y="${by-3}" text-anchor="middle" fill="${isSel?'#a899fa':isToday?'rgba(168,153,250,0.8)':'rgba(168,153,250,0.5)'}" font-size="8.5" font-family="DM Sans,sans-serif">${d.count}</text>`;
+      s+=`<rect x="${cx-bW-1}" y="${by}" width="${bW}" height="${bH}" rx="2.5" fill="${isSel?'#7c6af7':isToday?'#a899fa':'rgba(124,106,247,0.4)'}"/>`;
+      s+=`<text x="${cx-bW/2-1}" y="${by-2}" text-anchor="middle" fill="${isSel?'#a899fa':'rgba(168,153,250,0.6)'}" font-size="8" font-family="DM Sans,sans-serif">${d.wP}</text>`;
     }
-    // Galère pts bar
-    if(d.pts){
-      const bH=Math.max(d.pts/maxP*chartH,5);
+    // Juliette bar (right)
+    if(d.jP){
+      const bH=Math.max(d.jP/maxP*chartH,4);
       const by=padT+chartH-bH;
-      s+=`<rect x="${cx+1}" y="${by}" width="${bW}" height="${bH}" rx="2.5" fill="${isSel?'#f07070':isToday?'#f5a623':'rgba(240,112,112,0.38)'}"/>`;
-      s+=`<text x="${cx+bW/2+1}" y="${by-3}" text-anchor="middle" fill="${isSel?'#f07070':isToday?'rgba(245,166,35,0.9)':'rgba(240,112,112,0.5)'}" font-size="8.5" font-family="DM Sans,sans-serif">${d.pts}</text>`;
+      s+=`<rect x="${cx+1}" y="${by}" width="${bW}" height="${bH}" rx="2.5" fill="${isSel?'#e87db8':isToday?'rgba(232,125,184,0.8)':'rgba(232,125,184,0.4)'}"/>`;
+      s+=`<text x="${cx+bW/2+1}" y="${by-2}" text-anchor="middle" fill="${isSel?'#e87db8':'rgba(232,125,184,0.6)'}" font-size="8" font-family="DM Sans,sans-serif">${d.jP}</text>`;
+    }
+    // Empty day placeholder
+    if(!d.wP&&!d.jP){
+      s+=`<rect x="${cx-bW-1}" y="${padT+chartH-3}" width="${bW}" height="3" rx="1.5" fill="rgba(255,255,255,0.07)"/>`;
+      s+=`<rect x="${cx+1}" y="${padT+chartH-3}" width="${bW}" height="3" rx="1.5" fill="rgba(255,255,255,0.07)"/>`;
     }
     // Day label
     s+=`<text x="${cx}" y="${H-14}" text-anchor="middle" fill="${isSel?'#f0eff8':isToday?'#a899fa':'rgba(240,239,248,0.38)'}" font-size="9" font-weight="${isSel||isToday?'500':'400'}" font-family="DM Sans,sans-serif" style="cursor:pointer" onclick="switchDay('${DAYS[i]}')">${DAYS[i].slice(0,2)}</text>`;
-    // Done progress bar at bottom
-    if(d.count>0){
-      const pct=d.done/d.count;
-      s+=`<rect x="${padH+i*colW+3}" y="${H-5}" width="${colW-6}" height="2.5" rx="1.5" fill="rgba(255,255,255,0.07)"/>`;
-      s+=`<rect x="${padH+i*colW+3}" y="${H-5}" width="${(colW-6)*pct}" height="2.5" rx="1.5" fill="${isSel?'#3ecfb2':isToday?'rgba(62,207,178,0.7)':'rgba(62,207,178,0.35)'}"/>`;
+    // Task count small
+    if(d.total>0){
+      s+=`<text x="${cx}" y="${H-5}" text-anchor="middle" fill="${isSel?'rgba(240,239,248,0.6)':'rgba(240,239,248,0.25)'}" font-size="7.5" font-family="DM Sans,sans-serif">${d.wC+d.jC} tâche${d.wC+d.jC>1?'s':''}</text>`;
+    }
+    // Done progress bar
+    if(d.total>0){
+      s+=`<rect x="${padH+i*colW+3}" y="${H-11}" width="${colW-6}" height="2" rx="1" fill="rgba(255,255,255,0.06)"/>`;
+      s+=`<rect x="${padH+i*colW+3}" y="${H-11}" width="${(colW-6)*d.done/d.total}" height="2" rx="1" fill="${isSel?'#3ecfb2':'rgba(62,207,178,0.35)'}"/>`;
     }
   });
   s+=`</svg>`;
@@ -774,6 +787,20 @@ function removePlanExtra(day,idx){
 }
 
 // ── STATS ──────────────────────────────────────────────────────────────────
+function resetStats(){
+  const now=new Date(),wk=weekKey();
+  const before=completions.length;
+  completions=completions.filter(c=>{
+    const d=new Date(c.date);
+    if(statPeriod==='semaine') return c.week!==wk;
+    if(statPeriod==='mois') return !(d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear());
+    return d.getFullYear()!==now.getFullYear();
+  });
+  save();
+  const removed=before-completions.length;
+  toast(removed+' coche'+(removed>1?'s':'')+' supprimée'+(removed>1?'s':'')+(removed===0?' (déjà vide)':''));
+  renderStats();
+}
 function renderStats(){
   const now=new Date(),wk=weekKey();
   const filtered=completions.filter(c=>{
@@ -794,9 +821,14 @@ function renderStats(){
       .map(([id,n])=>({name:tasks.find(t=>t.id==id)?.name||'?',n}));
   }
   const pl={semaine:'cette semaine',mois:'ce mois',annee:'cette année'}[statPeriod];
+  const resetBtn=`<div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+    <button onclick="resetStats()" style="background:rgba(240,112,112,0.1);border:1px solid rgba(240,112,112,0.25);border-radius:var(--rs);color:var(--coral);font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 13px;cursor:pointer">
+      🗑 Remettre à zéro ${pl}
+    </button></div>\`;
   const tabs=['semaine','mois','annee'].map(p=>`<button class="ptab${statPeriod===p?' active':''}" onclick="setStat('${p}')">${{semaine:'Semaine',mois:'Mois',annee:'Année'}[p]}</button>`).join('');
   let html=`<div class="stats-wrap"><div class="period-tabs">${tabs}</div>`;
   if(!filtered.length){
+    html+=resetBtn;
     html+=`<div class="empty"><div class="empty-icon">📊</div>Aucune tâche cochée ${pl}.<br><span style="font-size:13px">Cochez vos tâches dans l'onglet Agenda !</span></div></div>`;
     document.getElementById('view-stats').innerHTML=html;return;
   }
