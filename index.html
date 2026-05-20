@@ -236,14 +236,14 @@ const DEFAULT_TASKS=[
   {id:53,name:"Déclaration d'impôts",cat:'admin',freq:'a',who:'both',load:4,days:'tous'},
   {id:54,name:'Gérer remboursements mutuelle',cat:'admin',freq:'m',who:'both',load:2,days:'tous'},
 ];
- 
+
 // ── STATE ──────────────────────────────────────────────────────────────────
 let tasks,cats,weekPlans,completions,nextId,nextCatId;
 let curView='agenda',curDay=DAYS[((new Date().getDay()+6)%7)];
 let editId=null,addCat=null,addCatOpen=false,selCatColor=CAT_COLORS[5];
 let statPeriod='semaine',planAddDay=null,planAddWho='william',showAllTasks=false;
 let manualLastDone={};
- 
+
 // ── STORAGE ────────────────────────────────────────────────────────────────
 function load(){
   tasks=JSON.parse(localStorage.getItem('pm4_t')||'null')||JSON.parse(JSON.stringify(DEFAULT_TASKS));
@@ -265,19 +265,19 @@ function save(){
   localStorage.setItem('pm4_nc',nextCatId);
   localStorage.setItem('pm4_mld',JSON.stringify(manualLastDone));
 }
- 
+
 // ── UTILS ──────────────────────────────────────────────────────────────────
 function weekKey(d=new Date()){
   const jan=new Date(d.getFullYear(),0,1);
   return d.getFullYear()+'-W'+String(Math.ceil(((d-jan)/864e5+jan.getDay()+1)/7)).padStart(2,'0');
 }
 function tasksForDay(day){return tasks.filter(t=>(DAY_SETS[t.days]||DAY_SETS.tous).includes(day))}
-function isDone(id){const td=new Date().toISOString().slice(0,10);return completions.some(c=>c.taskId===id&&c.date===td)}
+function isDone(id,day=curDay){const td=getTargetDate(day).toISOString().slice(0,10);return completions.some(c=>c.taskId===id&&c.date===td)}
 function getWkData(){return weekPlans[weekKey()]||{plan:{},extras:{}}}
 function getPlan(){return getWkData().plan}
 function getExtras(){return getWkData().extras}
 function assigned(id){const p=getPlan()[id];return(p&&p!=='skip')?p:'william'}
- 
+
 function getLastDone(taskId){
   const comps=completions.filter(c=>c.taskId===taskId).map(c=>c.date).sort();
   const lastComp=comps[comps.length-1]||null;
@@ -344,8 +344,65 @@ function render(){
   else if(curView==='planning') renderPlanning();
   else renderStats();
 }
- 
+
 // ── AGENDA ─────────────────────────────────────────────────────────────────
+
+function renderWeekChart(){
+  const data=DAYS.map((day,i)=>{
+    const tDate=getTargetDate(day);
+    const dt=tasksForDay(day).filter(t=>isDue(t,tDate));
+    return{day,count:dt.length,pts:dt.reduce((s,t)=>s+t.load,0),done:dt.filter(t=>isDone(t.id,day)).length};
+  });
+  const maxC=Math.max(...data.map(d=>d.count),1);
+  const maxP=Math.max(...data.map(d=>d.pts),1);
+  const todayIdx=(new Date().getDay()+6)%7;
+  const W=340,H=116,padT=14,padB=30,padH=6;
+  const colW=(W-padH*2)/7;
+  const bW=colW*0.33;
+  const chartH=H-padT-padB;
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">`;
+  // Week totals
+  const totC=data.reduce((a,d)=>a+d.count,0);
+  const totP=data.reduce((a,d)=>a+d.pts,0);
+  s+=`<text x="${W-2}" y="9" text-anchor="end" fill="rgba(240,239,248,0.35)" font-size="8.5" font-family="DM Sans,sans-serif">Semaine : ${totC} tâches · ${totP} pts de galère</text>`;
+  // Legend
+  s+=`<rect x="2" y="3" width="7" height="7" rx="2" fill="rgba(124,106,247,0.6)"/>`;
+  s+=`<text x="12" y="9.5" fill="rgba(240,239,248,0.45)" font-size="8.5" font-family="DM Sans,sans-serif">Tâches</text>`;
+  s+=`<rect x="50" y="3" width="7" height="7" rx="2" fill="rgba(240,112,112,0.6)"/>`;
+  s+=`<text x="60" y="9.5" fill="rgba(240,239,248,0.45)" font-size="8.5" font-family="DM Sans,sans-serif">Pts galère</text>`;
+  data.forEach((d,i)=>{
+    const cx=padH+i*colW+colW/2;
+    const isToday=i===todayIdx;
+    const isSel=DAYS[i]===curDay;
+    // Clickable bg
+    s+=`<rect x="${padH+i*colW+1}" y="${padT-4}" width="${colW-2}" height="${chartH+10}" rx="6" fill="${isSel?'rgba(124,106,247,0.1)':'transparent'}" style="cursor:pointer" onclick="switchDay('${DAYS[i]}')"/>`;
+    // Tasks bar
+    if(d.count){
+      const bH=Math.max(d.count/maxC*chartH,5);
+      const by=padT+chartH-bH;
+      s+=`<rect x="${cx-bW-1}" y="${by}" width="${bW}" height="${bH}" rx="2.5" fill="${isSel?'#7c6af7':isToday?'#a899fa':'rgba(124,106,247,0.38)'}"/>`;
+      s+=`<text x="${cx-bW/2-1}" y="${by-3}" text-anchor="middle" fill="${isSel?'#a899fa':isToday?'rgba(168,153,250,0.8)':'rgba(168,153,250,0.5)'}" font-size="8.5" font-family="DM Sans,sans-serif">${d.count}</text>`;
+    }
+    // Galère pts bar
+    if(d.pts){
+      const bH=Math.max(d.pts/maxP*chartH,5);
+      const by=padT+chartH-bH;
+      s+=`<rect x="${cx+1}" y="${by}" width="${bW}" height="${bH}" rx="2.5" fill="${isSel?'#f07070':isToday?'#f5a623':'rgba(240,112,112,0.38)'}"/>`;
+      s+=`<text x="${cx+bW/2+1}" y="${by-3}" text-anchor="middle" fill="${isSel?'#f07070':isToday?'rgba(245,166,35,0.9)':'rgba(240,112,112,0.5)'}" font-size="8.5" font-family="DM Sans,sans-serif">${d.pts}</text>`;
+    }
+    // Day label
+    s+=`<text x="${cx}" y="${H-14}" text-anchor="middle" fill="${isSel?'#f0eff8':isToday?'#a899fa':'rgba(240,239,248,0.38)'}" font-size="9" font-weight="${isSel||isToday?'500':'400'}" font-family="DM Sans,sans-serif" style="cursor:pointer" onclick="switchDay('${DAYS[i]}')">${DAYS[i].slice(0,2)}</text>`;
+    // Done progress bar at bottom
+    if(d.count>0){
+      const pct=d.done/d.count;
+      s+=`<rect x="${padH+i*colW+3}" y="${H-5}" width="${colW-6}" height="2.5" rx="1.5" fill="rgba(255,255,255,0.07)"/>`;
+      s+=`<rect x="${padH+i*colW+3}" y="${H-5}" width="${(colW-6)*pct}" height="2.5" rx="1.5" fill="${isSel?'#3ecfb2':isToday?'rgba(62,207,178,0.7)':'rgba(62,207,178,0.35)'}"/>`;
+    }
+  });
+  s+=`</svg>`;
+  return `<div style="padding:10px 16px 0">${s}</div>`;
+}
+
 function renderAgenda(){
   const todayIdx=(new Date().getDay()+6)%7;
   let strip='<div class="day-strip">';
@@ -356,6 +413,7 @@ function renderAgenda(){
       <span class="dp-num" style="${isToday?'color:var(--acc2)':''}">${isToday?'•':i+1}</span>
       <span class="dp-dot"></span></div>`;
   });strip+='</div>';
+  const weekChart=renderWeekChart();
   const targetDate=getTargetDate(curDay);
   const allDayT=tasksForDay(curDay);
   const dueTasks=showAllTasks?allDayT:allDayT.filter(t=>isDue(t,targetDate));
@@ -405,17 +463,17 @@ function renderAgenda(){
         <div class="tright">${nd?`<span style="font-size:10px;color:var(--teal);background:rgba(62,207,178,.1);padding:2px 7px;border-radius:20px">${nd}</span>`:''}${avFor(assigned(t.id))}</div></div>`;
     });secs+='</div></div>';
   }
-  document.getElementById('view-agenda').innerHTML=strip+prog+secs;
+  document.getElementById('view-agenda').innerHTML=strip+weekChart+prog+secs;
 }
 function switchDay(d){curDay=d;render()}
 function toggleSec(id){document.getElementById(id)?.classList.toggle('collapsed')}
 function toggleDone(taskId){
-  const td=new Date().toISOString().slice(0,10),wk=weekKey(),person=assigned(taskId);
+  const td=getTargetDate(curDay).toISOString().slice(0,10),wk=weekKey(),person=assigned(taskId);
   const idx=completions.findIndex(c=>c.taskId===taskId&&c.date===td);
   if(idx>=0)completions.splice(idx,1);else completions.push({taskId,person,date:td,week:wk});
   save();render();
 }
- 
+
 // ── TASKS ──────────────────────────────────────────────────────────────────
 function renderTasks(){
   let html='';
@@ -476,7 +534,7 @@ function renderTasks(){
   html+='</div></div><div style="height:8px"></div>';
   document.getElementById('view-tasks').innerHTML=html;
 }
- 
+
 function buildForm(t,mode,catId){
   const name=t?t.name:'',freq=t?t.freq:'h',days=t?t.days:'tous',who=t?t.who:'both',loadV=t?t.load:2;
   const fid=mode==='edit'?'ef':'af';
@@ -510,7 +568,7 @@ function buildForm(t,mode,catId){
            <button class="btn-cancel-f" onclick="closeAdd()">Annuler</button>`}
     </div></div>`;
 }
- 
+
 function getWho(fid){
   const wrap=document.getElementById(fid+'_who');if(!wrap)return 'both';
   for(const o of WHO_OPTS){if(wrap.querySelector('.'+o.wcls))return o.v}
@@ -562,7 +620,7 @@ function confirmAddCat(){
 function deleteCat(id){
   cats=cats.filter(c=>c.id!==id);save();toast('Catégorie supprimée');renderTasks();
 }
- 
+
 // ── PLANNING ───────────────────────────────────────────────────────────────
 function renderPlanning(){
   const wk=weekKey(),wkData=weekPlans[wk];
@@ -575,7 +633,7 @@ function renderPlanning(){
     </div>
     <button class="btn-auto" onclick="autoAssign()">✨ Auto-répartir</button>
   </div>`;
- 
+
   if(!plan){
     html+=`<div style="padding:32px 20px;text-align:center;color:var(--txt2)">
       <div style="font-size:36px;margin-bottom:12px">🗓</div>
@@ -584,7 +642,7 @@ function renderPlanning(){
     </div>`;
     document.getElementById('view-planning').innerHTML=html;return;
   }
- 
+
   // Load balance summary
   let wL=0,jL=0,wC=0,jC=0;
   tasks.forEach(t=>{const a=plan[t.id];if(a==='skip')return;const w=t.load*(FREQ_W[t.freq]||.25);if(a==='william'){wL+=w;wC++}else if(a==='juliette'){jL+=w;jC++}});
@@ -604,7 +662,7 @@ function renderPlanning(){
       <div class="bar-track"><div class="bar-fill" style="width:${Math.round(jL/tot*100)}%;background:var(--pink)"></div></div>
     </div>
   </div>`;
- 
+
   const todayIdx=(new Date().getDay()+6)%7;
   DAYS.forEach((day,di)=>{
     const dt=tasksForDay(day).filter(t=>plan[t.id]&&plan[t.id]!=='skip');
@@ -662,7 +720,7 @@ function renderPlanning(){
   document.getElementById('view-planning').innerHTML=html;
   if(planAddDay) setTimeout(()=>document.getElementById('pa_name')?.focus(),60);
 }
- 
+
 function ensureWkData(){
   const wk=weekKey();
   if(!weekPlans[wk]) weekPlans[wk]={plan:{},extras:{}};
@@ -714,7 +772,7 @@ function removePlanExtra(day,idx){
   wkd.extras[day]?.splice(idx,1);
   save();toast('Supprimé');renderPlanning();
 }
- 
+
 // ── STATS ──────────────────────────────────────────────────────────────────
 function renderStats(){
   const now=new Date(),wk=weekKey();
@@ -793,7 +851,7 @@ function renderStats(){
   document.getElementById('view-stats').innerHTML=html;
 }
 function setStat(p){statPeriod=p;renderStats()}
- 
+
 // ── INIT ───────────────────────────────────────────────────────────────────
 load();render();
 setInterval(render,60000);
