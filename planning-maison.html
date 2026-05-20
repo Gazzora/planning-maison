@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Planning Maison">
+<title>Planning Maison</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f1a;
+  --surface: #1a1a2e;
+  --surface2: #22223a;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #f0eff8;
+  --text2: rgba(240,239,248,0.55);
+  --text3: rgba(240,239,248,0.3);
+  --accent: #7c6af7;
+  --accent2: #a899fa;
+  --teal: #3ecfb2;
+  --amber: #f5a623;
+  --coral: #f07070;
+  --pink: #e87db8;
+  --green: #6bcb77;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 16px; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 90px;
+}
+
+/* HEADER */
+.app-header {
+  padding: 52px 20px 16px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.app-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 26px;
+  letter-spacing: -0.5px;
+}
+.app-date {
+  font-size: 12px;
+  color: var(--text2);
+  text-align: right;
+}
+
+/* DAY STRIP */
+.day-strip {
+  display: flex;
+  gap: 6px;
+  padding: 14px 20px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.day-strip::-webkit-scrollbar { display: none; }
+.day-pill {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 12px;
+  border-radius: 40px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.18s;
+  min-width: 52px;
+}
+.day-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.day-pill .day-letter {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.day-pill.active .day-letter { color: rgba(255,255,255,0.8); }
+.day-pill .day-num {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+.day-pill.active .day-num { color: #fff; }
+.day-pill .day-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent2);
+  opacity: 0;
+}
+.day-pill.has-tasks .day-dot { opacity: 1; }
+.day-pill.active .day-dot { background: rgba(255,255,255,0.7); }
+
+/* PROGRESS */
+.progress-bar-wrap {
+  padding: 16px 20px 8px;
+}
+.progress-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 6px;
+}
+.progress-track {
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--teal));
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* SECTIONS */
+.section { padding: 10px 20px 0; }
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0 8px;
+  cursor: pointer;
+}
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.section-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.section-count { font-size: 11px; color: var(--text3); }
+.chevron {
+  font-size: 13px;
+  color: var(--text3);
+  transition: transform 0.18s;
+}
+.section.collapsed .chevron { transform: rotate(-90deg); }
+
+/* TASK CARDS */
+.task-list { display: flex; flex-direction: column; gap: 6px; padding-bottom: 4px; }
+.task-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.16s;
+  position: relative;
+  overflow: hidden;
+}
+.task-card:active { transform: scale(0.98); }
+.task-card.done {
+  opacity: 0.45;
+}
+.task-card.done .task-name {
+  text-decoration: line-through;
+  color: var(--text3);
+}
+.task-check {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.18s;
+}
+.task-card.done .task-check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.task-check-icon {
+  width: 10px; height: 10px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.task-card.done .task-check-icon { opacity: 1; }
+.task-name { flex: 1; font-size: 14px; font-weight: 400; color: var(--text); }
+.task-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.freq-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+.freq-q { background: rgba(62,207,178,0.12); color: var(--teal); }
+.freq-h { background: rgba(124,106,247,0.15); color: var(--accent2); }
+.freq-m { background: rgba(245,166,35,0.12); color: var(--amber); }
+.freq-a { background: rgba(240,112,112,0.12); color: var(--coral); }
+.assigned {
+  font-size: 10px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.assigned-v { background: rgba(124,106,247,0.2); color: var(--accent2); }
+.assigned-e { background: rgba(232,125,184,0.2); color: var(--pink); }
+.assigned-t { background: rgba(62,207,178,0.15); color: var(--teal); }
+.btn-delete {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: color 0.15s;
+  padding: 0;
+}
+.btn-delete:hover { color: var(--coral); }
+
+/* ADD TASK */
+.add-area { padding: 12px 20px 0; }
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  background: none;
+  border: 1px dashed var(--border2);
+  border-radius: var(--radius);
+  color: var(--text2);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.16s;
+}
+.add-btn:hover { border-color: var(--accent); color: var(--accent2); }
+
+/* ADD FORM */
+.add-form {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 20px 0;
+}
+.add-form.open { display: flex; }
+.add-form input, .add-form select {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 10px 12px;
+  outline: none;
+  width: 100%;
+}
+.add-form input:focus, .add-form select:focus { border-color: var(--accent); }
+.add-form select option { background: var(--surface2); }
+.form-row { display: flex; gap: 8px; }
+.form-row select { flex: 1; }
+.form-actions { display: flex; gap: 8px; }
+.btn-confirm {
+  flex: 1;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-confirm:hover { opacity: 0.85; }
+.btn-cancel {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+/* BOTTOM NAV */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: rgba(15,15,26,0.92);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 10px 0 24px;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 0;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  transition: color 0.15s;
+}
+.nav-item.active { color: var(--accent2); }
+.nav-icon { font-size: 20px; line-height: 1; }
+
+/* VIEW: FRÉQUENCES */
+.freq-view { padding: 0 20px; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text2);
+  font-size: 14px;
+}
+.empty-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.4; }
+
+/* WEEK SUMMARY BADGES */
+.day-summary {
+  padding: 12px 20px 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.summary-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--surface2);
+  color: var(--text2);
+}
+.summary-badge b { color: var(--text); }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 40px;
+  opacity: 0;
+  transition: all 0.25s;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div>
+    <div class="app-title">Planning Maison</div>
+  </div>
+  <div class="app-date" id="headerDate"></div>
+</header>
+
+<div id="app"></div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" data-view="agenda" onclick="switchView('agenda', this)">
+    <span class="nav-icon">📅</span>Agenda
+  </button>
+  <button class="nav-item" data-view="freq" onclick="switchView('freq', this)">
+    <span class="nav-icon">🔄</span>Fréquence
+  </button>
+  <button class="nav-item" data-view="stats" onclick="switchView('stats', this)">
+    <span class="nav-icon">📊</span>Stats
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const JOURS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+const JOURS_FULL = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const FREQ_MAP = { q:'Quotidien', h:'Hebdo', m:'Mensuel', a:'Annuel' };
+const FREQ_CLASS = { q:'freq-q', h:'freq-h', m:'freq-m', a:'freq-a' };
+
+const CATS = [
+  { id:'cuisine', label:'Cuisine & repas', color:'#3ecfb2', dot:'#3ecfb2' },
+  { id:'menage', label:'Ménage', color:'#7c6af7', dot:'#7c6af7' },
+  { id:'bebe', label:'Bébé', color:'#e87db8', dot:'#e87db8' },
+  { id:'admin', label:'Administratif', color:'#f5a623', dot:'#f5a623' },
+];
+
+const TASK_DAYS = {
+  tous: ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],
+  semaine: ['Lun','Mar','Mer','Jeu','Ven'],
+  weekend: ['Sam','Dim'],
+  lundi: ['Lun'], mardi: ['Mar'], mercredi: ['Mer'],
+  jeudi: ['Jeu'], vendredi: ['Ven'], samedi: ['Sam'], dimanche: ['Dim'],
+};
+
+let tasks = [
+  {id:1, name:'Faire la vaisselle', cat:'cuisine', freq:'q', days:'tous', who:'t'},
+  {id:2, name:'Essuyer les plans de travail', cat:'cuisine', freq:'q', days:'tous', who:'t'},
+  {id:3, name:'Préparer les repas', cat:'cuisine', freq:'q', days:'tous', who:'t'},
+  {id:4, name:'Faire les courses', cat:'cuisine', freq:'h', days:'samedi', who:'t'},
+  {id:5, name:'Nettoyer le réfrigérateur', cat:'cuisine', freq:'m', days:'tous', who:'t'},
+  {id:6, name:'Nettoyer le four / micro-ondes', cat:'cuisine', freq:'m', days:'tous', who:'t'},
+  {id:7, name:'Dégraisser la hotte', cat:'cuisine', freq:'m', days:'tous', who:'t'},
+
+  {id:10, name:'Passer l\'aspirateur', cat:'menage', freq:'h', days:'tous', who:'t'},
+  {id:11, name:'Serpillière / laver les sols', cat:'menage', freq:'h', days:'tous', who:'t'},
+  {id:12, name:'Poussière chambre', cat:'menage', freq:'h', days:'tous', who:'t'},
+  {id:13, name:'Nettoyer les toilettes', cat:'menage', freq:'h', days:'tous', who:'t'},
+  {id:14, name:'Nettoyer la salle de bain', cat:'menage', freq:'h', days:'tous', who:'t'},
+  {id:15, name:'Changer les draps', cat:'menage', freq:'h', days:'tous', who:'t'},
+  {id:16, name:'Faire une lessive', cat:'menage', freq:'h', days:'tous', who:'t'},
+  {id:17, name:'Étendre / plier le linge', cat:'menage', freq:'h', days:'tous', who:'t'},
+  {id:18, name:'Sortir poubelle noire', cat:'menage', freq:'h', days:'lundi', who:'t'},
+  {id:19, name:'Sortir poubelle jaune', cat:'menage', freq:'h', days:'lundi', who:'t'},
+  {id:20, name:'Sortir poubelle verre', cat:'menage', freq:'m', days:'lundi', who:'t'},
+  {id:21, name:'Vider poubelle cuisine', cat:'menage', freq:'q', days:'tous', who:'t'},
+
+  {id:30, name:'Change et hygiène bébé', cat:'bebe', freq:'q', days:'tous', who:'t'},
+  {id:31, name:'Repas / biberon bébé', cat:'bebe', freq:'q', days:'tous', who:'t'},
+  {id:32, name:'Bain de bébé', cat:'bebe', freq:'q', days:'tous', who:'t'},
+  {id:33, name:'Coucher bébé', cat:'bebe', freq:'q', days:'tous', who:'t'},
+  {id:34, name:'Préparer sac crèche', cat:'bebe', freq:'q', days:'semaine', who:'t'},
+  {id:35, name:'Stériliser biberons / tétines', cat:'bebe', freq:'q', days:'tous', who:'t'},
+  {id:36, name:'Fiche de paie de la nounou', cat:'bebe', freq:'m', days:'tous', who:'t'},
+  {id:37, name:'Rdv pédiatre', cat:'bebe', freq:'m', days:'tous', who:'t'},
+  {id:38, name:'Vérifier stock couches / lingettes', cat:'bebe', freq:'h', days:'tous', who:'t'},
+  {id:39, name:'Laver jouets de bébé', cat:'bebe', freq:'m', days:'tous', who:'t'},
+
+  {id:50, name:'Ouvrir et trier le courrier', cat:'admin', freq:'h', days:'tous', who:'t'},
+  {id:51, name:'Payer les factures', cat:'admin', freq:'m', days:'tous', who:'t'},
+  {id:52, name:'Vérifier le compte bancaire', cat:'admin', freq:'h', days:'tous', who:'t'},
+  {id:53, name:'Déclaration d\'impôts', cat:'admin', freq:'a', days:'tous', who:'t'},
+  {id:54, name:'Renouveler ordonnances médicales', cat:'admin', freq:'m', days:'tous', who:'t'},
+  {id:55, name:'Gérer remboursements mutuelle', cat:'admin', freq:'m', days:'tous', who:'t'},
+];
+
+let done = {};
+let currentView = 'agenda';
+let currentDay = JOURS[new Date().getDay()];
+let addFormOpen = false;
+let nextId = 100;
+
+function load() {
+  const s = localStorage.getItem('pm_tasks');
+  if (s) tasks = JSON.parse(s);
+  const d = localStorage.getItem('pm_done');
+  if (d) done = JSON.parse(d);
+  const ni = localStorage.getItem('pm_nextId');
+  if (ni) nextId = parseInt(ni);
+}
+
+function save() {
+  localStorage.setItem('pm_tasks', JSON.stringify(tasks));
+  localStorage.setItem('pm_done', JSON.stringify(done));
+  localStorage.setItem('pm_nextId', nextId.toString());
+}
+
+function doneKey(taskId, day) { return `${taskId}_${day}_${new Date().toDateString()}`; }
+
+function toggleDone(taskId) {
+  const k = doneKey(taskId, currentDay);
+  done[k] = !done[k];
+  if (!done[k]) delete done[k];
+  save();
+  renderApp();
+}
+
+function deleteTask(taskId) {
+  tasks = tasks.filter(t => t.id !== taskId);
+  save();
+  showToast('Tâche supprimée');
+  renderApp();
+}
+
+function getTasksForDay(day) {
+  return tasks.filter(t => {
+    const allowed = TASK_DAYS[t.days] || TASK_DAYS['tous'];
+    return allowed.includes(day);
+  });
+}
+
+function isDone(taskId) {
+  return !!done[doneKey(taskId, currentDay)];
+}
+
+function switchView(v, el) {
+  currentView = v;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  renderApp();
+}
+
+function switchDay(day) {
+  currentDay = day;
+  renderApp();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function getCat(id) { return CATS.find(c => c.id === id) || CATS[0]; }
+
+function whoLabel(who) {
+  if (who === 'v') return '<span class="assigned assigned-v">V</span>';
+  if (who === 'e') return '<span class="assigned assigned-e">E</span>';
+  return '<span class="assigned assigned-t" style="font-size:9px">T</span>';
+}
+
+function renderAgenda() {
+  const today = new Date();
+  const todayDay = JOURS[today.getDay()];
+
+  // Day strip
+  const days = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  let strip = '<div class="day-strip">';
+  days.forEach((d, i) => {
+    const hasT = getTasksForDay(d).length > 0;
+    strip += `<div class="day-pill${d===currentDay?' active':''}${hasT?' has-tasks':''}" onclick="switchDay('${d}')">
+      <span class="day-letter">${d}</span>
+      <span class="day-num">${i+1}</span>
+      <span class="day-dot"></span>
+    </div>`;
+  });
+  strip += '</div>';
+
+  // Progress
+  const dayTasks = getTasksForDay(currentDay);
+  const doneCount = dayTasks.filter(t => isDone(t.id)).length;
+  const total = dayTasks.length;
+  const pct = total ? Math.round(doneCount / total * 100) : 0;
+
+  const progress = `<div class="progress-bar-wrap">
+    <div class="progress-top">
+      <span>${JOURS_FULL[days.indexOf(currentDay)+1] || currentDay}</span>
+      <span>${doneCount} / ${total} faites — ${pct}%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+  </div>`;
+
+  // Group by category
+  let sections = '';
+  CATS.forEach(cat => {
+    const catTasks = dayTasks.filter(t => t.cat === cat.id);
+    if (catTasks.length === 0) return;
+    const catDone = catTasks.filter(t => isDone(t.id)).length;
+    sections += `<div class="section" id="sec_${cat.id}">
+      <div class="section-head" onclick="toggleSection('${cat.id}')">
+        <div class="section-label">
+          <span class="section-dot" style="background:${cat.color}"></span>
+          ${cat.label}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="section-count">${catDone}/${catTasks.length}</span>
+          <span class="chevron">›</span>
+        </div>
+      </div>
+      <div class="task-list">`;
+    catTasks.forEach(t => {
+      const d = isDone(t.id);
+      sections += `<div class="task-card${d?' done':''}" onclick="toggleDone(${t.id})">
+        <div class="task-check">
+          <svg class="task-check-icon" viewBox="0 0 10 10" fill="none">
+            <path d="M1.5 5L4 7.5L8.5 2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="task-name">${t.name}</span>
+        <div class="task-right">
+          <span class="freq-tag ${FREQ_CLASS[t.freq]}">${FREQ_MAP[t.freq]}</span>
+          <button class="btn-delete" onclick="event.stopPropagation();deleteTask(${t.id})" aria-label="Supprimer">×</button>
+        </div>
+      </div>`;
+    });
+    sections += `</div></div>`;
+  });
+
+  if (dayTasks.length === 0) {
+    sections = `<div class="empty-state"><div class="empty-icon">✨</div>Aucune tâche ce jour-là</div>`;
+  }
+
+  // Add form
+  const addForm = `
+  <div class="add-area">
+    <button class="add-btn" onclick="openAddForm()">
+      <span style="font-size:18px;line-height:1">+</span> Ajouter une tâche
+    </button>
+  </div>
+  <div class="add-form${addFormOpen?' open':''}" id="addForm">
+    <input type="text" id="newTaskName" placeholder="Nom de la tâche…" onkeydown="if(event.key==='Enter')confirmAdd()">
+    <div class="form-row">
+      <select id="newTaskCat">
+        ${CATS.map(c=>`<option value="${c.id}">${c.label}</option>`).join('')}
+      </select>
+      <select id="newTaskFreq">
+        <option value="q">Quotidien</option>
+        <option value="h">Hebdo</option>
+        <option value="m">Mensuel</option>
+        <option value="a">Annuel</option>
+      </select>
+    </div>
+    <select id="newTaskDays">
+      <option value="tous">Tous les jours</option>
+      <option value="semaine">Jours de semaine</option>
+      <option value="weekend">Week-end</option>
+      <option value="lundi">Lundi uniquement</option>
+      <option value="mardi">Mardi uniquement</option>
+      <option value="mercredi">Mercredi uniquement</option>
+      <option value="jeudi">Jeudi uniquement</option>
+      <option value="vendredi">Vendredi uniquement</option>
+      <option value="samedi">Samedi uniquement</option>
+      <option value="dimanche">Dimanche uniquement</option>
+    </select>
+    <div class="form-actions">
+      <button class="btn-confirm" onclick="confirmAdd()">Ajouter</button>
+      <button class="btn-cancel" onclick="closeAddForm()">Annuler</button>
+    </div>
+  </div>`;
+
+  return strip + progress + sections + addForm;
+}
+
+function renderFreq() {
+  const freqs = [
+    {key:'q', label:'Quotidiennes', icon:'☀️'},
+    {key:'h', label:'Hebdomadaires', icon:'📆'},
+    {key:'m', label:'Mensuelles', icon:'🗓'},
+    {key:'a', label:'Annuelles', icon:'📅'},
+  ];
+  let html = '';
+  freqs.forEach(f => {
+    const ftasks = tasks.filter(t => t.freq === f.key);
+    if (ftasks.length === 0) return;
+    html += `<div class="section">
+      <div class="section-head">
+        <div class="section-label">${f.icon} ${f.label}</div>
+        <span class="section-count">${ftasks.length} tâches</span>
+      </div>
+      <div class="task-list">`;
+    ftasks.forEach(t => {
+      const cat = getCat(t.cat);
+      html += `<div class="task-card">
+        <span class="section-dot" style="background:${cat.color};width:8px;height:8px;border-radius:50%;flex-shrink:0"></span>
+        <span class="task-name">${t.name}</span>
+        <div class="task-right">
+          <span style="font-size:11px;color:var(--text3)">${cat.label}</span>
+          <button class="btn-delete" onclick="deleteTask(${t.id})" aria-label="Supprimer">×</button>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  return '<div class="freq-view">' + html + '</div>';
+}
+
+function renderStats() {
+  const days = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const todayStr = new Date().toDateString();
+  let totalDone = 0;
+  Object.keys(done).forEach(k => { if (k.endsWith(todayStr)) totalDone++; });
+
+  const catStats = CATS.map(cat => {
+    const n = tasks.filter(t => t.cat === cat.id).length;
+    return {cat, n};
+  });
+
+  let html = `<div style="padding:20px">
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Aujourd'hui</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center">
+        <div style="font-family:'DM Serif Display',serif;font-size:42px;color:var(--accent2)">${totalDone}</div>
+        <div style="font-size:13px;color:var(--text2)">tâches accomplies</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Répartition par catégorie</div>`;
+  catStats.forEach(({cat, n}) => {
+    const pct = tasks.length ? Math.round(n/tasks.length*100) : 0;
+    html += `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+        <span>${cat.label}</span><span style="color:var(--text2)">${n} tâches</span>
+      </div>
+      <div style="height:4px;background:var(--surface2);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${cat.color};border-radius:4px;transition:width 0.5s"></div>
+      </div>
+    </div>`;
+  });
+  html += `<div style="margin-top:20px;font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Total par fréquence</div>`;
+  const freqs = [{k:'q',l:'Quotidien'},{k:'h',l:'Hebdo'},{k:'m',l:'Mensuel'},{k:'a',l:'Annuel'}];
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
+  freqs.forEach(f => {
+    const n = tasks.filter(t=>t.freq===f.k).length;
+    html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+      <div style="font-size:22px;font-weight:500;color:var(--text)">${n}</div>
+      <div style="font-size:12px;color:var(--text2)">${f.l}</div>
+    </div>`;
+  });
+  html += `</div></div>`;
+  return html;
+}
+
+function toggleSection(catId) {
+  const sec = document.getElementById('sec_' + catId);
+  if (sec) sec.classList.toggle('collapsed');
+}
+
+function openAddForm() {
+  addFormOpen = true;
+  renderApp();
+  setTimeout(() => document.getElementById('newTaskName')?.focus(), 50);
+}
+
+function closeAddForm() {
+  addFormOpen = false;
+  renderApp();
+}
+
+function confirmAdd() {
+  const name = document.getElementById('newTaskName')?.value.trim();
+  if (!name) return;
+  const cat = document.getElementById('newTaskCat')?.value;
+  const freq = document.getElementById('newTaskFreq')?.value;
+  const days = document.getElementById('newTaskDays')?.value;
+  tasks.push({ id: nextId++, name, cat, freq, days, who:'t' });
+  addFormOpen = false;
+  save();
+  showToast('Tâche ajoutée !');
+  renderApp();
+}
+
+function renderApp() {
+  const d = new Date();
+  document.getElementById('headerDate').innerHTML =
+    `${d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})}<br><span style="font-size:11px">${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>`;
+
+  let html = '';
+  if (currentView === 'agenda') html = renderAgenda();
+  else if (currentView === 'freq') html = renderFreq();
+  else html = renderStats();
+  document.getElementById('app').innerHTML = html;
+}
+
+load();
+renderApp();
+setInterval(() => {
+  document.getElementById('headerDate').innerHTML =
+    (() => { const d=new Date(); return `${d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})}<br><span style="font-size:11px">${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>`; })();
+}, 30000);
+</script>
+</body>
+</html>
