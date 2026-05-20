@@ -291,6 +291,15 @@ function isDue(task,refDate=new Date()){
   if(!last) return true;
   return Math.floor((refDate-new Date(last))/864e5)>=days;
 }
+function getTargetDate(day){
+  const todayIdx=(new Date().getDay()+6)%7;
+  const selIdx=DAYS.indexOf(day);
+  const diff=selIdx-todayIdx;
+  const d=new Date();
+  d.setDate(d.getDate()+diff);
+  d.setHours(23,59,59);
+  return d;
+}
 function nextDueStr(task){
   const last=getLastDone(task.id);if(!last)return null;
   const d=new Date(last);
@@ -341,15 +350,16 @@ function renderAgenda(){
   const todayIdx=(new Date().getDay()+6)%7;
   let strip='<div class="day-strip">';
   DAYS.forEach((d,i)=>{
-    const hasT=tasksForDay(d).filter(t=>isDue(t)).length>0,isToday=i===todayIdx;
+    const hasT=tasksForDay(d).filter(t=>isDue(t,getTargetDate(d))).length>0,isToday=i===todayIdx;
     strip+=`<div class="day-pill${d===curDay?' active':''}${hasT?' has-t':''}" onclick="switchDay('${d}')">
       <span class="dp-letter">${d.slice(0,2)}</span>
       <span class="dp-num" style="${isToday?'color:var(--acc2)':''}">${isToday?'•':i+1}</span>
       <span class="dp-dot"></span></div>`;
   });strip+='</div>';
+  const targetDate=getTargetDate(curDay);
   const allDayT=tasksForDay(curDay);
-  const dueTasks=showAllTasks?allDayT:allDayT.filter(t=>isDue(t));
-  const notDueTasks=showAllTasks?[]:allDayT.filter(t=>!isDue(t));
+  const dueTasks=showAllTasks?allDayT:allDayT.filter(t=>isDue(t,targetDate));
+  const notDueTasks=showAllTasks?[]:allDayT.filter(t=>!isDue(t,targetDate));
   const dc=dueTasks.filter(t=>isDone(t.id)).length;
   const pct=dueTasks.length?Math.round(dc/dueTasks.length*100):0;
   const prog=`<div class="prog-wrap">
