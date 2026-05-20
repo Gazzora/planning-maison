@@ -824,7 +824,7 @@ function renderStats(){
   const resetBtn=`<div style="display:flex;justify-content:flex-end;margin-bottom:14px">
     <button onclick="resetStats()" style="background:rgba(240,112,112,0.1);border:1px solid rgba(240,112,112,0.25);border-radius:var(--rs);color:var(--coral);font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 13px;cursor:pointer">
       🗑 Remettre à zéro ${pl}
-    </button></div>\`;
+    </button></div>`;
   const tabs=['semaine','mois','annee'].map(p=>`<button class="ptab${statPeriod===p?' active':''}" onclick="setStat('${p}')">${{semaine:'Semaine',mois:'Mois',annee:'Année'}[p]}</button>`).join('');
   let html=`<div class="stats-wrap"><div class="period-tabs">${tabs}</div>`;
   if(!filtered.length){
