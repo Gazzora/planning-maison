@@ -236,14 +236,14 @@ const DEFAULT_TASKS=[
   {id:53,name:"Déclaration d'impôts",cat:'admin',freq:'a',who:'both',load:4,days:'tous'},
   {id:54,name:'Gérer remboursements mutuelle',cat:'admin',freq:'m',who:'both',load:2,days:'tous'},
 ];
-
+ 
 // ── STATE ──────────────────────────────────────────────────────────────────
 let tasks,cats,weekPlans,completions,nextId,nextCatId;
 let curView='agenda',curDay=DAYS[((new Date().getDay()+6)%7)];
 let editId=null,addCat=null,addCatOpen=false,selCatColor=CAT_COLORS[5];
 let statPeriod='semaine',planAddDay=null,planAddWho='william',showAllTasks=false;
 let manualLastDone={};
-
+ 
 // ── STORAGE ────────────────────────────────────────────────────────────────
 function load(){
   tasks=JSON.parse(localStorage.getItem('pm4_t')||'null')||JSON.parse(JSON.stringify(DEFAULT_TASKS));
@@ -265,7 +265,7 @@ function save(){
   localStorage.setItem('pm4_nc',nextCatId);
   localStorage.setItem('pm4_mld',JSON.stringify(manualLastDone));
 }
-
+ 
 // ── UTILS ──────────────────────────────────────────────────────────────────
 function weekKey(d=new Date()){
   const jan=new Date(d.getFullYear(),0,1);
@@ -277,7 +277,7 @@ function getWkData(){return weekPlans[weekKey()]||{plan:{},extras:{}}}
 function getPlan(){return getWkData().plan}
 function getExtras(){return getWkData().extras}
 function assigned(id){const p=getPlan()[id];return(p&&p!=='skip')?p:'william'}
-
+ 
 function getLastDone(taskId){
   const comps=completions.filter(c=>c.taskId===taskId).map(c=>c.date).sort();
   const lastComp=comps[comps.length-1]||null;
@@ -335,7 +335,7 @@ function render(){
   else if(curView==='planning') renderPlanning();
   else renderStats();
 }
-
+ 
 // ── AGENDA ─────────────────────────────────────────────────────────────────
 function renderAgenda(){
   const todayIdx=(new Date().getDay()+6)%7;
@@ -405,7 +405,7 @@ function toggleDone(taskId){
   if(idx>=0)completions.splice(idx,1);else completions.push({taskId,person,date:td,week:wk});
   save();render();
 }
-
+ 
 // ── TASKS ──────────────────────────────────────────────────────────────────
 function renderTasks(){
   let html='';
@@ -466,7 +466,7 @@ function renderTasks(){
   html+='</div></div><div style="height:8px"></div>';
   document.getElementById('view-tasks').innerHTML=html;
 }
-
+ 
 function buildForm(t,mode,catId){
   const name=t?t.name:'',freq=t?t.freq:'h',days=t?t.days:'tous',who=t?t.who:'both',loadV=t?t.load:2;
   const fid=mode==='edit'?'ef':'af';
@@ -486,7 +486,7 @@ function buildForm(t,mode,catId){
     <div class="who-5 mg-b" id="${fid}_who">
       ${WHO_OPTS.map(o=>`<button class="w5${who===o.v?' '+o.wcls:''}" onclick="pickWho(this,'${o.v}','${fid}')" title="${o.label}">${o.short}</button>`).join('')}
     </div>
-    <label class="fl">Charge mentale : <span id="${fid}_lv">${loadV}/5</span></label>
+    <label class="fl">Niveau de galère : <span id="${fid}_lv">${loadV}/5</span></label>
     <input type="range" class="load-slider mg-b" id="${fid}_load" min="1" max="5" step="1" value="${loadV}"
       oninput="document.getElementById('${fid}_lv').textContent=this.value+'/5'">
     <label class="fl">Derni\u00e8re r\u00e9alisation</label>
@@ -500,7 +500,7 @@ function buildForm(t,mode,catId){
            <button class="btn-cancel-f" onclick="closeAdd()">Annuler</button>`}
     </div></div>`;
 }
-
+ 
 function getWho(fid){
   const wrap=document.getElementById(fid+'_who');if(!wrap)return 'both';
   for(const o of WHO_OPTS){if(wrap.querySelector('.'+o.wcls))return o.v}
@@ -552,7 +552,7 @@ function confirmAddCat(){
 function deleteCat(id){
   cats=cats.filter(c=>c.id!==id);save();toast('Catégorie supprimée');renderTasks();
 }
-
+ 
 // ── PLANNING ───────────────────────────────────────────────────────────────
 function renderPlanning(){
   const wk=weekKey(),wkData=weekPlans[wk];
@@ -565,16 +565,16 @@ function renderPlanning(){
     </div>
     <button class="btn-auto" onclick="autoAssign()">✨ Auto-répartir</button>
   </div>`;
-
+ 
   if(!plan){
     html+=`<div style="padding:32px 20px;text-align:center;color:var(--txt2)">
       <div style="font-size:36px;margin-bottom:12px">🗓</div>
       <div style="font-weight:500;margin-bottom:8px">Planning vide</div>
-      <div style="font-size:13px;line-height:1.6">Cliquez "Auto-répartir" pour générer la semaine automatiquement selon les préférences et la charge mentale. Vous pouvez ensuite tout ajuster.</div>
+      <div style="font-size:13px;line-height:1.6">Cliquez "Auto-répartir" pour générer la semaine automatiquement selon les préférences et la niveau de galère. Vous pouvez ensuite tout ajuster.</div>
     </div>`;
     document.getElementById('view-planning').innerHTML=html;return;
   }
-
+ 
   // Load balance summary
   let wL=0,jL=0,wC=0,jC=0;
   tasks.forEach(t=>{const a=plan[t.id];if(a==='skip')return;const w=t.load*(FREQ_W[t.freq]||.25);if(a==='william'){wL+=w;wC++}else if(a==='juliette'){jL+=w;jC++}});
@@ -594,7 +594,7 @@ function renderPlanning(){
       <div class="bar-track"><div class="bar-fill" style="width:${Math.round(jL/tot*100)}%;background:var(--pink)"></div></div>
     </div>
   </div>`;
-
+ 
   const todayIdx=(new Date().getDay()+6)%7;
   DAYS.forEach((day,di)=>{
     const dt=tasksForDay(day).filter(t=>plan[t.id]&&plan[t.id]!=='skip');
@@ -652,7 +652,7 @@ function renderPlanning(){
   document.getElementById('view-planning').innerHTML=html;
   if(planAddDay) setTimeout(()=>document.getElementById('pa_name')?.focus(),60);
 }
-
+ 
 function ensureWkData(){
   const wk=weekKey();
   if(!weekPlans[wk]) weekPlans[wk]={plan:{},extras:{}};
@@ -704,7 +704,7 @@ function removePlanExtra(day,idx){
   wkd.extras[day]?.splice(idx,1);
   save();toast('Supprimé');renderPlanning();
 }
-
+ 
 // ── STATS ──────────────────────────────────────────────────────────────────
 function renderStats(){
   const now=new Date(),wk=weekKey();
@@ -747,7 +747,7 @@ function renderStats(){
       </div>
       <div style="font-size:11px;color:var(--txt2);margin-bottom:3px">Tâches</div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.round(comps.length/maxC*100)}%;background:${color}"></div></div>
-      <div style="font-size:11px;color:var(--txt2);margin:6px 0 3px">Charge mentale</div>
+      <div style="font-size:11px;color:var(--txt2);margin:6px 0 3px">Niveau de galère</div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.round(load/maxL*100)}%;background:${color};opacity:.65"></div></div>
       ${top.length?`<div style="margin-top:10px;font-size:11px;color:var(--txt2)">Top : ${top.map(t=>`<span style="background:var(--surf2);padding:2px 8px;border-radius:20px;margin-right:4px;display:inline-block;margin-top:4px">${t.name} ×${t.n}</span>`).join('')}</div>`:''}
     </div>`;
@@ -757,7 +757,7 @@ function renderStats(){
   const totL=wL+jL;const wPct=totL?Math.round(wL/totL*100):50;
   const bal=Math.abs(wPct-50)<=12;
   html+=`<div class="pcard">
-    <div style="font-size:12px;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Équilibre charge mentale</div>
+    <div style="font-size:12px;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Équilibre niveau de galère</div>
     <div style="display:flex;height:12px;border-radius:12px;overflow:hidden;margin-bottom:6px">
       <div style="width:${wPct}%;background:var(--acc);transition:width .5s"></div>
       <div style="flex:1;background:var(--pink)"></div>
@@ -783,7 +783,7 @@ function renderStats(){
   document.getElementById('view-stats').innerHTML=html;
 }
 function setStat(p){statPeriod=p;renderStats()}
-
+ 
 // ── INIT ───────────────────────────────────────────────────────────────────
 load();render();
 setInterval(render,60000);
