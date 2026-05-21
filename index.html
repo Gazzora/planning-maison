@@ -53,7 +53,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 .task-list{display:flex;flex-direction:column;gap:5px;padding-bottom:4px}
 .task-card{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);cursor:pointer;transition:all .16s;user-select:none}
 .task-card:active{transform:scale(.98)}
-.task-card.done{opacity:.38}
+.task-card.done{opacity:.55}
 .task-card.done .tname{text-decoration:line-through;color:var(--txt3)}
 .tcheck{width:21px;height:21px;border-radius:50%;border:1.5px solid var(--bdr2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s}
 .task-card.done .tcheck{background:var(--acc);border-color:var(--acc)}
@@ -589,8 +589,9 @@ function renderAgenda(){
   const weekChart=renderTeamProgress();
   const targetDate=getTargetDate(curDay);
   const allDayT=tasksForDay(curDay);
-  const dueTasks=showAllTasks?allDayT:allDayT.filter(t=>isDue(t,targetDate));
-  const notDueTasks=showAllTasks?[]:allDayT.filter(t=>!isDue(t,targetDate));
+  // Show tasks that are due OR have been done today (so they stay visible after check)
+  const dueTasks=showAllTasks?allDayT:allDayT.filter(t=>isDue(t,targetDate)||isDone(t.id,curDay));
+  const notDueTasks=showAllTasks?[]:allDayT.filter(t=>!isDue(t,targetDate)&&!isDone(t.id,curDay));
   const dc=dueTasks.filter(t=>isDone(t.id)).length;
   const pct=dueTasks.length?Math.round(dc/dueTasks.length*100):0;
   const prog=`<div class="prog-wrap">
@@ -937,8 +938,22 @@ function renderPlanning(){
       </div>`;
     });
     if(planAddDay===day){
+      const taskOpts=cats.map(cat=>{
+        const ct=tasks.filter(t=>t.cat===cat.id);
+        if(!ct.length) return '';
+        return `<optgroup label="${cat.label}">${ct.map(t=>{
+          const neverDone=!getLastDone(t.id);
+          const inPlan=plan[t.id]&&plan[t.id]!=='skip';
+          return `<option value="${t.id}">${t.name}${neverDone?' ✦':''}${inPlan?' (déjà planifié)':''}</option>`;
+        }).join('')}</optgroup>`;
+      }).join('');
       html+=`<div class="plan-add-form" onclick="event.stopPropagation()">
-        <input class="fi" id="pa_name" placeholder="Nom de la tâche à ajouter…">
+        <select class="fi" id="pa_pick" onchange="onPaPick()" style="margin-bottom:8px">
+          <option value="">— Choisir une tâche existante —</option>
+          ${taskOpts}
+        </select>
+        <div style="font-size:10px;color:var(--txt3);margin:-4px 0 6px;line-height:1.3">✦ = jamais faite</div>
+        <input class="fi" id="pa_name" placeholder="Ou nom personnalisé…">
         <div class="plan-add-who" id="pa_who">
           <button class="paw sw" onclick="pickPAW(this,'william')">${settings.williamName}</button>
           <button class="paw" onclick="pickPAW(this,'juliette')">${settings.julietteName}</button>
@@ -1049,6 +1064,23 @@ function pickPAW(btn,val){
   document.querySelectorAll('#pa_who .paw').forEach(b=>b.className='paw');
   btn.classList.add(val==='william'?'sw':val==='juliette'?'sj':'sb');
   planAddWho=val;
+}
+function onPaPick(){
+  const sel=document.getElementById('pa_pick');
+  const tid=+sel.value;
+  if(!tid) return;
+  const t=tasks.find(x=>x.id===tid);
+  if(t){
+    document.getElementById('pa_name').value=t.name;
+    // Auto-set who based on task's preference
+    let w='both';
+    if(t.who==='william'||t.who==='pref-w') w='william';
+    else if(t.who==='juliette'||t.who==='pref-j') w='juliette';
+    document.querySelectorAll('#pa_who .paw').forEach(b=>b.className='paw');
+    const targetBtn=document.querySelector(`#pa_who .paw:nth-child(${w==='william'?1:w==='juliette'?2:3})`);
+    if(targetBtn) targetBtn.classList.add(w==='william'?'sw':w==='juliette'?'sj':'sb');
+    planAddWho=w;
+  }
 }
 function confirmPlanAdd(day){
   const name=document.getElementById('pa_name')?.value.trim();
