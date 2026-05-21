@@ -287,6 +287,7 @@ let statPeriod='semaine',planAddDay=null,planAddWho='william',showAllTasks=false
 let manualLastDone={};
 let settings={williamName:'William',julietteName:'Juliette',williamColor:'#7c6af7',julietteColor:'#e87db8'};
 let planWeekOffset=0;
+let expandedPastDays=new Set();
 
 // ── STORAGE ────────────────────────────────────────────────────────────────
 function load(){
@@ -445,6 +446,12 @@ function nextDueStr(task){
   if(diff<32) return 'Dans '+Math.round(diff/7)+' sem.';
   if(diff<365) return 'Dans '+Math.round(diff/30)+' mois';
   return 'Dans '+Math.round(diff/365)+' an(s)';
+}
+function canPersonDo(task,person){
+  const p=person==='william'?'w':'j';
+  const excl=task.excl?.[p]||[];
+  const taskDays=DAY_SETS[task.days]||DAY_SETS.tous;
+  return taskDays.some(d=>!excl.includes(d.toLowerCase()));
 }
 function dots(n){
   let h='<div class="load-dots">';
@@ -699,7 +706,18 @@ function buildForm(t,mode,catId){
     <input type="range" class="load-slider mg-b" id="${fid}_load" min="1" max="5" step="1" value="${loadV}"
       oninput="document.getElementById('${fid}_lv').textContent=this.value+'/5'">
     <label class="fl">Derni\u00e8re r\u00e9alisation</label>
-    <input type="date" class="fi mg-b" id="${fid}_lastdone" value="${t?getLastDone(t.id)||'':''}">    
+    <input type="date" class="fi mg-b" id="${fid}_lastdone" value="${t?getLastDone(t.id)||'':''}">
+    <label class="fl">Exclusions — jours où une personne ne peut pas</label>
+    <div style="background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rs);padding:10px;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:48px repeat(7,1fr);gap:4px;align-items:center;font-size:11px">
+        <span></span>
+        ${['L','M','M','J','V','S','D'].map(d=>`<div style="text-align:center;color:var(--txt3);font-weight:500">${d}</div>`).join('')}
+        <div style="color:var(--w);font-size:12px;font-weight:500">${settings.williamName.slice(0,3)}</div>
+        ${['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'].map(d=>`<div style="text-align:center"><input type="checkbox" id="${fid}_excl_w_${d}" ${(t?.excl?.w||[]).includes(d)?'checked':''} style="cursor:pointer;accent-color:var(--w);width:16px;height:16px"></div>`).join('')}
+        <div style="color:var(--j);font-size:12px;font-weight:500">${settings.julietteName.slice(0,3)}</div>
+        ${['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'].map(d=>`<div style="text-align:center"><input type="checkbox" id="${fid}_excl_j_${d}" ${(t?.excl?.j||[]).includes(d)?'checked':''} style="cursor:pointer;accent-color:var(--j);width:16px;height:16px"></div>`).join('')}
+      </div>
+    </div>
     <div class="form-actions">
       ${mode==='edit'
         ?`<button class="btn-save" onclick="saveEdit(${t.id})">Enregistrer</button>
@@ -732,6 +750,12 @@ function saveEdit(id){
   t.who=getWho('ef');
   const ld=document.getElementById('ef_lastdone')?.value;
   if(ld) manualLastDone[t.id]=ld; else delete manualLastDone[t.id];
+  // Save exclusions
+  const days=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+  const wExcl=days.filter(d=>document.getElementById('ef_excl_w_'+d)?.checked);
+  const jExcl=days.filter(d=>document.getElementById('ef_excl_j_'+d)?.checked);
+  if(wExcl.length||jExcl.length) t.excl={w:wExcl,j:jExcl};
+  else delete t.excl;
   editId=null;save();toast('Enregistré !');renderTasks();
 }
 function delTask(id){
@@ -743,8 +767,13 @@ function closeAdd(){addCat=null;renderTasks()}
 function confirmAdd(catId){
   const name=document.getElementById('af_name')?.value.trim();
   if(!name){toast('Entrez un nom');return}
-  tasks.push({id:nextId++,name,cat:catId,freq:document.getElementById('af_freq').value,
-    days:document.getElementById('af_days').value,load:+document.getElementById('af_load').value,who:getWho('af')});
+  const days=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+  const wExcl=days.filter(d=>document.getElementById('af_excl_w_'+d)?.checked);
+  const jExcl=days.filter(d=>document.getElementById('af_excl_j_'+d)?.checked);
+  const newTask={id:nextId++,name,cat:catId,freq:document.getElementById('af_freq').value,
+    days:document.getElementById('af_days').value,load:+document.getElementById('af_load').value,who:getWho('af')};
+  if(wExcl.length||jExcl.length) newTask.excl={w:wExcl,j:jExcl};
+  tasks.push(newTask);
   addCat=null;save();toast('Ajoutée !');renderTasks();
 }
 // Category management
@@ -776,12 +805,12 @@ function renderPlanning(){
   const weekLabel=planWeekOffset===0?'Cette semaine':planWeekOffset===1?'Semaine prochaine':planWeekOffset===-1?'Semaine dernière':`Dans ${planWeekOffset} sem.`;
   let html=`<div style="padding:14px 16px 0">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-      <button onclick="planWeekOffset--;render()" style="background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rs);color:var(--txt);font-family:'DM Sans',sans-serif;padding:8px 12px;cursor:pointer;font-size:14px">‹</button>
+      <button onclick="planWeekOffset--;expandedPastDays.clear();render()" style="background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rs);color:var(--txt);font-family:'DM Sans',sans-serif;padding:8px 12px;cursor:pointer;font-size:14px">‹</button>
       <div style="flex:1;text-align:center">
         <div style="font-size:14px;font-weight:500">${weekLabel}</div>
         <div style="font-size:11px;color:var(--txt2);margin-top:2px">${startStr} – ${endStr}${validated?' · ✓ validé':''}</div>
       </div>
-      <button onclick="planWeekOffset++;render()" style="background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rs);color:var(--txt);font-family:'DM Sans',sans-serif;padding:8px 12px;cursor:pointer;font-size:14px">›</button>
+      <button onclick="planWeekOffset++;expandedPastDays.clear();render()" style="background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rs);color:var(--txt);font-family:'DM Sans',sans-serif;padding:8px 12px;cursor:pointer;font-size:14px">›</button>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:14px">
       <button onclick="autoAssign()" style="flex:1;background:var(--acc);border:none;border-radius:var(--rs);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:10px;cursor:pointer">✨ Auto-répartir</button>
@@ -799,12 +828,17 @@ function renderPlanning(){
     document.getElementById('view-planning').innerHTML=html;return;
   }
 
-  // Load summary based on plan + extras
+  // Weekly instance count based on isDue filter (matches agenda display)
   let wL=0,jL=0,wC=0,jC=0;
-  tasks.forEach(t=>{
-    const a=plan[t.id];if(!a||a==='skip') return;
-    const w=t.load*(FREQ_W[t.freq]||.25);
-    if(a==='william'){wL+=w;wC++}else if(a==='juliette'){jL+=w;jC++}
+  DAYS.forEach(day=>{
+    const tDate=new Date(weekRange(planWeekOffset).start);
+    tDate.setDate(tDate.getDate()+DAYS.indexOf(day));tDate.setHours(23,59,59);
+    const dt=tasksForDay(day).filter(t=>plan[t.id]&&plan[t.id]!=='skip').filter(t=>isDue(t,tDate));
+    dt.forEach(t=>{
+      const a=plan[t.id];
+      if(a==='william'){wC++;wL+=t.load;}
+      else if(a==='juliette'){jC++;jL+=t.load;}
+    });
   });
   Object.values(extras).forEach(de=>(de||[]).forEach(e=>{if(e.person==='william')wC++;else if(e.person==='juliette')jC++;}));
   const tot=wL+jL||1;
@@ -825,14 +859,28 @@ function renderPlanning(){
 
   const todayIdx=(new Date().getDay()+6)%7;
   DAYS.forEach((day,di)=>{
-    const dt=tasksForDay(day).filter(t=>plan[t.id]&&plan[t.id]!=='skip');
+    const tDate=new Date(weekRange(planWeekOffset).start);
+    tDate.setDate(tDate.getDate()+di);tDate.setHours(23,59,59);
+    // Filter tasks by isDue for this specific day (matches agenda)
+    const dt=tasksForDay(day).filter(t=>plan[t.id]&&plan[t.id]!=='skip').filter(t=>isDue(t,tDate));
     const exs=extras[day]||[];
     if(!dt.length&&!exs.length&&planAddDay!==day) return;
     const isTodayCurrentWk=di===todayIdx&&planWeekOffset===0;
-    html+=`<div class="plan-day">
-      <div class="plan-day-head">
-        <span>${isTodayCurrentWk?'📌 ':''} ${DAYS_FULL[di]}</span>
-        <button class="add-btn" style="border:none;margin:0;padding:4px 8px;width:auto;background:none;font-size:12px;color:var(--acc2)" onclick="openPlanAdd('${day}')">+ Ajouter</button>
+    const isPast=planWeekOffset===0&&di<todayIdx;
+    const isCollapsed=isPast&&!expandedPastDays.has(day);
+    if(isCollapsed){
+      const totalPts=dt.reduce((s,t)=>s+t.load,0);
+      html+=`<div class="plan-day" style="opacity:.55">
+        <div class="plan-day-head" style="cursor:pointer" onclick="expandPastDay('${day}')">
+          <span>${DAYS_FULL[di]} <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--txt3);font-size:11px">passé · ${dt.length+exs.length} t. · ${totalPts} pts</span></span>
+          <span style="color:var(--txt3);font-size:12px">▼ voir</span>
+        </div></div>`;
+      return;
+    }
+    html+=`<div class="plan-day"${isPast?' style="opacity:.7"':''}>
+      <div class="plan-day-head"${isPast?' style="cursor:pointer" onclick="expandPastDay(\''+day+'\')"':''}>
+        <span>${isTodayCurrentWk?'📌 ':''}${DAYS_FULL[di]}${isPast?' <span style=\"font-weight:400;text-transform:none;letter-spacing:0;color:var(--txt3);font-size:10px\">passé</span>':''}</span>
+        ${isPast?'<span style=\"color:var(--txt3);font-size:12px\">▲ replier</span>':`<button class="add-btn" style="border:none;margin:0;padding:4px 8px;width:auto;background:none;font-size:12px;color:var(--acc2)" onclick="openPlanAdd('${day}')">+ Ajouter</button>`}
       </div>`;
     dt.forEach(t=>{
       const a=plan[t.id];
@@ -894,16 +942,39 @@ function generateWeekPlan(offset){
   let wS=0,jS=0;
   const fw=t=>t.load*(FREQ_W[t.freq]||.25);
   const eligible=tasks.filter(t=>isDueInWeek(t,offset));
-  eligible.filter(t=>t.who==='william').forEach(t=>{plan[t.id]='william';wS+=fw(t)});
-  eligible.filter(t=>t.who==='juliette').forEach(t=>{plan[t.id]='juliette';jS+=fw(t)});
+  // Fixed: assign to specified person if possible, otherwise the other
+  eligible.filter(t=>t.who==='william').forEach(t=>{
+    const wCan=canPersonDo(t,'william'),jCan=canPersonDo(t,'juliette');
+    if(wCan){plan[t.id]='william';wS+=fw(t);}
+    else if(jCan){plan[t.id]='juliette';jS+=fw(t);}
+    else{plan[t.id]='william';wS+=fw(t);}
+  });
+  eligible.filter(t=>t.who==='juliette').forEach(t=>{
+    const wCan=canPersonDo(t,'william'),jCan=canPersonDo(t,'juliette');
+    if(jCan){plan[t.id]='juliette';jS+=fw(t);}
+    else if(wCan){plan[t.id]='william';wS+=fw(t);}
+    else{plan[t.id]='juliette';jS+=fw(t);}
+  });
   eligible.filter(t=>t.who==='pref-w').sort((a,b)=>b.load-a.load).forEach(t=>{
-    if(wS<=jS*1.35){plan[t.id]='william';wS+=fw(t)}else{plan[t.id]='juliette';jS+=fw(t)}
+    const wCan=canPersonDo(t,'william'),jCan=canPersonDo(t,'juliette');
+    if(wCan&&!jCan){plan[t.id]='william';wS+=fw(t);}
+    else if(jCan&&!wCan){plan[t.id]='juliette';jS+=fw(t);}
+    else if(wS<=jS*1.15){plan[t.id]='william';wS+=fw(t);}
+    else{plan[t.id]='juliette';jS+=fw(t);}
   });
   eligible.filter(t=>t.who==='pref-j').sort((a,b)=>b.load-a.load).forEach(t=>{
-    if(jS<=wS*1.35){plan[t.id]='juliette';jS+=fw(t)}else{plan[t.id]='william';wS+=fw(t)}
+    const wCan=canPersonDo(t,'william'),jCan=canPersonDo(t,'juliette');
+    if(jCan&&!wCan){plan[t.id]='juliette';jS+=fw(t);}
+    else if(wCan&&!jCan){plan[t.id]='william';wS+=fw(t);}
+    else if(jS<=wS*1.15){plan[t.id]='juliette';jS+=fw(t);}
+    else{plan[t.id]='william';wS+=fw(t);}
   });
   eligible.filter(t=>t.who==='both').sort((a,b)=>b.load-a.load).forEach(t=>{
-    if(wS<=jS){plan[t.id]='william';wS+=fw(t)}else{plan[t.id]='juliette';jS+=fw(t)}
+    const wCan=canPersonDo(t,'william'),jCan=canPersonDo(t,'juliette');
+    if(wCan&&!jCan){plan[t.id]='william';wS+=fw(t);}
+    else if(jCan&&!wCan){plan[t.id]='juliette';jS+=fw(t);}
+    else if(wS<=jS){plan[t.id]='william';wS+=fw(t);}
+    else{plan[t.id]='juliette';jS+=fw(t);}
   });
   if(!weekPlans[wk]) weekPlans[wk]={plan:{},extras:{},validated:false};
   weekPlans[wk].plan=plan;
@@ -922,10 +993,24 @@ function autoAssign(){
   renderPlanning();
 }
 function swapPlan(taskId,person){
-  const wkd=ensureWkData();wkd.plan[taskId]=person;save();renderPlanning();
+  const wk=weekKeyOffset(planWeekOffset);
+  if(!weekPlans[wk]) weekPlans[wk]={plan:{},extras:{},validated:false};
+  if(!weekPlans[wk].plan) weekPlans[wk].plan={};
+  weekPlans[wk].plan[taskId]=person;
+  save();
+  renderPlanning();
+}
+function expandPastDay(day){
+  if(expandedPastDays.has(day)) expandedPastDays.delete(day);
+  else expandedPastDays.add(day);
+  renderPlanning();
 }
 function removePlanTask(taskId){
-  const wkd=ensureWkData();wkd.plan[taskId]='skip';save();toast('Tâche retirée cette semaine');renderPlanning();
+  const wk=weekKeyOffset(planWeekOffset);
+  if(!weekPlans[wk]) weekPlans[wk]={plan:{},extras:{},validated:false};
+  if(!weekPlans[wk].plan) weekPlans[wk].plan={};
+  weekPlans[wk].plan[taskId]='skip';
+  save();toast('Tâche retirée');renderPlanning();
 }
 function openPlanAdd(day){planAddDay=day;planAddWho='william';renderPlanning()}
 function closePlanAdd(){planAddDay=null;renderPlanning()}
@@ -1014,6 +1099,7 @@ function renderStats(){
       ${top.length?`<div style="margin-top:10px;font-size:11px;color:var(--txt2)">Top : ${top.map(t=>`<span style="background:var(--surf2);padding:2px 8px;border-radius:20px;margin-right:4px;display:inline-block;margin-top:4px">${t.name} ×${t.n}</span>`).join('')}</div>`:''}
     </div>`;
   }
+  html+=resetBtn;
   html+=pcard('William',wC,wL,'var(--acc2)','av-w');
   html+=pcard('Juliette',jC,jL,'var(--pink)','av-j');
   const totL=wL+jL;const wPct=totL?Math.round(wL/totL*100):50;
