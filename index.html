@@ -944,7 +944,7 @@ function renderPlanning(){
         return `<optgroup label="${cat.label}">${ct.map(t=>{
           const neverDone=!getLastDone(t.id);
           const inPlan=plan[t.id]&&plan[t.id]!=='skip';
-          return `<option value="${t.id}">${t.name}${neverDone?' ✦':''}${inPlan?' (déjà planifié)':''}</option>`;
+          return `<option value="${t.id}">${t.name}${neverDone?' ⏳':''}${inPlan?' (déjà planifié)':''}</option>`;
         }).join('')}</optgroup>`;
       }).join('');
       html+=`<div class="plan-add-form" onclick="event.stopPropagation()">
@@ -952,7 +952,7 @@ function renderPlanning(){
           <option value="">— Choisir une tâche existante —</option>
           ${taskOpts}
         </select>
-        <div style="font-size:10px;color:var(--txt3);margin:-4px 0 6px;line-height:1.3">✦ = jamais faite</div>
+        <div style="font-size:10px;color:var(--txt3);margin:-4px 0 6px;line-height:1.3">⏳ = jamais faite</div>
         <input class="fi" id="pa_name" placeholder="Ou nom personnalisé…">
         <div class="plan-add-who" id="pa_who">
           <button class="paw sw" onclick="pickPAW(this,'william')">${settings.williamName}</button>
