@@ -69,11 +69,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 .ld.on.l4,.ld.on.l5{background:var(--coral)}
 /* Avatar */
 .avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0}
-.av-w{background:rgba(124,106,247,.2);color:var(--acc2)}
-.av-pw{background:rgba(124,106,247,.1);color:var(--acc2);border:1px dashed rgba(124,106,247,.4)}
+.av-w{background:var(--w-bg);color:var(--w)}
+.av-pw{background:var(--w-l);color:var(--w);border:1px dashed var(--w-bd)}
 .av-b{background:rgba(62,207,178,.15);color:var(--teal);font-size:8px}
-.av-pj{background:rgba(232,125,184,.1);color:var(--pink);border:1px dashed rgba(232,125,184,.4)}
-.av-j{background:rgba(232,125,184,.2);color:var(--pink)}
+.av-pj{background:var(--j-l);color:var(--j);border:1px dashed var(--j-bd)}
+.av-j{background:var(--j-bg);color:var(--j)}
 /* Freq tag */
 .ftag{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500}
 .fq,.f2w{background:rgba(62,207,178,.12);color:var(--teal)}
@@ -90,11 +90,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 /* WHO 5-options */
 .who-5{display:flex;gap:4px;flex-wrap:nowrap}
 .w5{flex:1;padding:7px 2px;border-radius:var(--rs);border:1px solid var(--bdr2);background:var(--surf);color:var(--txt3);font-family:'DM Sans',sans-serif;font-size:10px;cursor:pointer;text-align:center;transition:all .15s;line-height:1.3}
-.w5.sw{background:rgba(124,106,247,.2);border-color:var(--acc);color:var(--acc2)}
-.w5.spw{background:rgba(124,106,247,.1);border-color:rgba(124,106,247,.4);color:var(--acc2)}
+.w5.sw{background:var(--w-bg);border-color:var(--w);color:var(--w)}
+.w5.spw{background:var(--w-l);border-color:var(--w-bd);color:var(--w)}
 .w5.sb{background:rgba(62,207,178,.15);border-color:var(--teal);color:var(--teal)}
-.w5.spj{background:rgba(232,125,184,.1);border-color:rgba(232,125,184,.4);color:var(--pink)}
-.w5.sj{background:rgba(232,125,184,.2);border-color:var(--pink);color:var(--pink)}
+.w5.spj{background:var(--j-l);border-color:var(--j-bd);color:var(--j)}
+.w5.sj{background:var(--j-bg);border-color:var(--j);color:var(--j)}
 .load-slider{width:100%;accent-color:var(--acc);cursor:pointer}
 .form-row{display:flex;gap:8px}
 .form-row>div{flex:1;min-width:0}
@@ -119,8 +119,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 .plan-task-name{flex:1;font-size:13px;color:var(--txt);min-width:0}
 .person-toggle{display:flex;border-radius:20px;overflow:hidden;border:1px solid var(--bdr2);flex-shrink:0}
 .pt-btn{padding:4px 9px;font-size:11px;font-weight:500;cursor:pointer;border:none;background:var(--surf);color:var(--txt3);font-family:'DM Sans',sans-serif;transition:all .15s}
-.pt-btn.am{background:rgba(124,106,247,.25);color:var(--acc2)}
-.pt-btn.aj{background:rgba(232,125,184,.25);color:var(--pink)}
+.pt-btn.am{background:var(--w-bg);color:var(--w)}
+.pt-btn.aj{background:var(--j-bg);color:var(--j)}
 .btn-x{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:16px;padding:0 2px;line-height:1;transition:color .15s;flex-shrink:0}
 .btn-x:hover{color:var(--coral)}
 /* Plan add form */
@@ -128,8 +128,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 .plan-add-form .fi{margin-bottom:8px;font-size:12px;padding:8px 10px}
 .plan-add-who{display:flex;gap:4px;margin-bottom:8px}
 .paw{flex:1;padding:6px 0;border-radius:var(--rs);border:1px solid var(--bdr2);background:var(--surf);color:var(--txt3);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;text-align:center}
-.paw.sw{background:rgba(124,106,247,.2);border-color:var(--acc);color:var(--acc2)}
-.paw.sj{background:rgba(232,125,184,.2);border-color:var(--pink);color:var(--pink)}
+.paw.sw{background:var(--w-bg);border-color:var(--w);color:var(--w)}
+.paw.sj{background:var(--j-bg);border-color:var(--j);color:var(--j)}
 .paw.sb{background:rgba(62,207,178,.15);border-color:var(--teal);color:var(--teal)}
 .plan-add-btns{display:flex;gap:6px}
 /* Stats */
@@ -200,11 +200,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 <div id="view-tasks" class="view"></div>
 <div id="view-planning" class="view"></div>
 <div id="view-stats" class="view"></div>
+<div id="view-settings" class="view"></div>
 <nav class="bnav">
   <button class="ni active" onclick="go('agenda',this)"><span class="ni-icon">📅</span>Agenda</button>
   <button class="ni" onclick="go('tasks',this)"><span class="ni-icon">✅</span>Tâches</button>
   <button class="ni" onclick="go('planning',this)"><span class="ni-icon">🗓</span>Planning</button>
   <button class="ni" onclick="go('stats',this)"><span class="ni-icon">📊</span>Stats</button>
+  <button class="ni" onclick="go('settings',this)"><span class="ni-icon">⚙️</span>Réglages</button>
 </nav>
 <div class="toast" id="toast"></div>
 <script>
@@ -283,6 +285,8 @@ let curView='agenda',curDay=DAYS[((new Date().getDay()+6)%7)];
 let editId=null,addCat=null,addCatOpen=false,selCatColor=CAT_COLORS[5];
 let statPeriod='semaine',planAddDay=null,planAddWho='william',showAllTasks=false;
 let manualLastDone={};
+let settings={williamName:'William',julietteName:'Juliette',williamColor:'#7c6af7',julietteColor:'#e87db8'};
+let planWeekOffset=0;
 
 // ── STORAGE ────────────────────────────────────────────────────────────────
 function load(){
@@ -293,6 +297,9 @@ function load(){
   nextId=+localStorage.getItem('pm4_n')||100;
   nextCatId=+localStorage.getItem('pm4_nc')||10;
   manualLastDone=JSON.parse(localStorage.getItem('pm4_mld')||'{}');
+  const savedSettings=JSON.parse(localStorage.getItem('pm4_settings')||'null');
+  if(savedSettings) settings={...settings,...savedSettings};
+  applyColors();
   // Migrate old 'moi' → 'william'
   tasks.forEach(t=>{if(t.who==='moi')t.who='william'});
   // Device ID for sync conflict detection
@@ -309,13 +316,14 @@ function save(){
   localStorage.setItem('pm4_n',nextId);
   localStorage.setItem('pm4_nc',nextCatId);
   localStorage.setItem('pm4_mld',JSON.stringify(manualLastDone));
+  localStorage.setItem('pm4_settings',JSON.stringify(settings));
   syncToFirebase();
 }
 
 function syncToFirebase(){
   if(!window._firebaseReady) return;
   window._setDoc(window._DOC, {
-    tasks,cats,weekPlans,completions,manualLastDone,
+    tasks,cats,weekPlans,completions,manualLastDone,settings,
     _updatedBy: window._deviceId,
     _updatedAt: Date.now()
   }).catch(e=>console.warn('Sync error:',e));
@@ -327,6 +335,7 @@ window._remoteUpdate = function(key, value){
   else if(key==='completions'){ completions=value; }
   else if(key==='cats'){ cats=value; }
   else if(key==='manualLastDone'){ manualLastDone=value; }
+  else if(key==='settings'){ settings={...settings,...value}; applyColors(); }
   // Update localStorage too
   const lsKey={'tasks':'pm4_t','weekPlans':'pm4_p','completions':'pm4_c','cats':'pm4_cats','manualLastDone':'pm4_mld'}[key];
   if(lsKey) localStorage.setItem(lsKey, JSON.stringify(value));
@@ -342,6 +351,40 @@ function showSyncToast(){
 }
 
 // ── UTILS ──────────────────────────────────────────────────────────────────
+function hexToRgba(hex,a){
+  const h=hex.replace('#','');
+  const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function applyColors(){
+  const r=document.documentElement.style;
+  r.setProperty('--w',settings.williamColor);
+  r.setProperty('--w-bg',hexToRgba(settings.williamColor,0.2));
+  r.setProperty('--w-bd',hexToRgba(settings.williamColor,0.4));
+  r.setProperty('--w-l',hexToRgba(settings.williamColor,0.1));
+  r.setProperty('--j',settings.julietteColor);
+  r.setProperty('--j-bg',hexToRgba(settings.julietteColor,0.2));
+  r.setProperty('--j-bd',hexToRgba(settings.julietteColor,0.4));
+  r.setProperty('--j-l',hexToRgba(settings.julietteColor,0.1));
+}
+function weekKeyOffset(offset=0){
+  const d=new Date();d.setDate(d.getDate()+offset*7);return weekKey(d);
+}
+function weekRange(offset=0){
+  const d=new Date();d.setDate(d.getDate()+offset*7);
+  const dow=(d.getDay()+6)%7;
+  const start=new Date(d);start.setDate(d.getDate()-dow);start.setHours(0,0,0,0);
+  const end=new Date(start);end.setDate(start.getDate()+7);
+  return {start,end};
+}
+function isDueInWeek(task,offset=0){
+  const{start,end}=weekRange(offset);
+  const last=getLastDone(task.id);
+  if(!last) return true;
+  const next=new Date(last);
+  next.setDate(next.getDate()+(FREQ_DAYS[task.freq]||1));
+  return next<end;
+}
 function weekKey(d=new Date()){
   const jan=new Date(d.getFullYear(),0,1);
   return d.getFullYear()+'-W'+String(Math.ceil(((d-jan)/864e5+jan.getDay()+1)/7)).padStart(2,'0');
@@ -351,7 +394,18 @@ function isDone(id,day=curDay){const td=getTargetDate(day).toISOString().slice(0
 function getWkData(){return weekPlans[weekKey()]||{plan:{},extras:{}}}
 function getPlan(){return getWkData().plan}
 function getExtras(){return getWkData().extras}
-function assigned(id){const p=getPlan()[id];return(p&&p!=='skip')?p:'william'}
+function assigned(id){
+  const wkd=getWkData();
+  if(wkd.validated){
+    const p=wkd.plan?.[id];
+    if(p&&p!=='skip') return p;
+  }
+  const t=tasks.find(x=>x.id===id);
+  if(!t) return 'william';
+  if(t.who==='william'||t.who==='pref-w') return 'william';
+  if(t.who==='juliette'||t.who==='pref-j') return 'juliette';
+  return 'both';
+}
 
 function getLastDone(taskId){
   const comps=completions.filter(c=>c.taskId===taskId).map(c=>c.date).sort();
@@ -417,78 +471,72 @@ function render(){
   if(curView==='agenda') renderAgenda();
   else if(curView==='tasks') renderTasks();
   else if(curView==='planning') renderPlanning();
-  else renderStats();
+  else if(curView==='stats') renderStats();
+  else if(curView==='settings') renderSettings();
 }
 
 // ── AGENDA ─────────────────────────────────────────────────────────────────
 
-function renderWeekChart(){
-  const plan=getPlan();
-  const data=DAYS.map((day,i)=>{
+function renderTeamProgress(){
+  const{start,end}=weekRange(0);
+  const startStr=start.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+  const endD=new Date(end);endD.setDate(endD.getDate()-1);
+  const endStr=endD.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+  // Compute weekly totals (galère points)
+  let totalPts=0,donePts=0,totalCount=0,doneCount=0;
+  DAYS.forEach(day=>{
     const tDate=getTargetDate(day);
     const dt=tasksForDay(day).filter(t=>isDue(t,tDate));
-    let wP=0,jP=0,wC=0,jC=0;
     dt.forEach(t=>{
-      const a=plan[t.id];
-      if(a==='skip') return;
-      if(a==='william'||(!a&&(t.who==='william'||t.who==='pref-w'))){wP+=t.load;wC++;}
-      else{jP+=t.load;jC++;}
+      totalCount++;totalPts+=t.load;
+      if(isDone(t.id,day)){doneCount++;donePts+=t.load;}
     });
-    return{day,wP,jP,wC,jC,done:dt.filter(t=>isDone(t.id,day)).length,total:dt.length};
   });
-  const maxP=Math.max(...data.map(d=>d.wP+d.jP),1);
+  const pctPts=totalPts?Math.round(donePts/totalPts*100):0;
+  // Daily sparkline
   const todayIdx=(new Date().getDay()+6)%7;
-  const W=340,H=118,padT=16,padB=30,padH=5;
-  const colW=(W-padH*2)/7;
-  const bW=colW*0.33;
-  const chartH=H-padT-padB;
-  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">`;
-  // Legend
-  s+=`<rect x="2" y="3" width="7" height="7" rx="2" fill="rgba(124,106,247,0.7)"/>`;
-  s+=`<text x="12" y="9.5" fill="rgba(240,239,248,0.5)" font-size="8.5" font-family="DM Sans,sans-serif">William</text>`;
-  s+=`<rect x="54" y="3" width="7" height="7" rx="2" fill="rgba(232,125,184,0.7)"/>`;
-  s+=`<text x="64" y="9.5" fill="rgba(240,239,248,0.5)" font-size="8.5" font-family="DM Sans,sans-serif">Juliette</text>`;
-  // Week totals
-  const totW=data.reduce((a,d)=>a+d.wP,0),totJ=data.reduce((a,d)=>a+d.jP,0);
-  s+=`<text x="${W-2}" y="9.5" text-anchor="end" fill="rgba(240,239,248,0.35)" font-size="8.5" font-family="DM Sans,sans-serif">W: ${totW} pts · J: ${totJ} pts</text>`;
-  data.forEach((d,i)=>{
-    const cx=padH+i*colW+colW/2;
-    const isToday=i===todayIdx,isSel=DAYS[i]===curDay;
-    // BG highlight
-    s+=`<rect x="${padH+i*colW+1}" y="${padT-4}" width="${colW-2}" height="${chartH+10}" rx="6" fill="${isSel?'rgba(124,106,247,0.1)':'transparent'}" style="cursor:pointer" onclick="switchDay('${DAYS[i]}')"/>`;
-    // William bar (left)
-    if(d.wP){
-      const bH=Math.max(d.wP/maxP*chartH,4);
-      const by=padT+chartH-bH;
-      s+=`<rect x="${cx-bW-1}" y="${by}" width="${bW}" height="${bH}" rx="2.5" fill="${isSel?'#7c6af7':isToday?'#a899fa':'rgba(124,106,247,0.4)'}"/>`;
-      s+=`<text x="${cx-bW/2-1}" y="${by-2}" text-anchor="middle" fill="${isSel?'#a899fa':'rgba(168,153,250,0.6)'}" font-size="8" font-family="DM Sans,sans-serif">${d.wP}</text>`;
-    }
-    // Juliette bar (right)
-    if(d.jP){
-      const bH=Math.max(d.jP/maxP*chartH,4);
-      const by=padT+chartH-bH;
-      s+=`<rect x="${cx+1}" y="${by}" width="${bW}" height="${bH}" rx="2.5" fill="${isSel?'#e87db8':isToday?'rgba(232,125,184,0.8)':'rgba(232,125,184,0.4)'}"/>`;
-      s+=`<text x="${cx+bW/2+1}" y="${by-2}" text-anchor="middle" fill="${isSel?'#e87db8':'rgba(232,125,184,0.6)'}" font-size="8" font-family="DM Sans,sans-serif">${d.jP}</text>`;
-    }
-    // Empty day placeholder
-    if(!d.wP&&!d.jP){
-      s+=`<rect x="${cx-bW-1}" y="${padT+chartH-3}" width="${bW}" height="3" rx="1.5" fill="rgba(255,255,255,0.07)"/>`;
-      s+=`<rect x="${cx+1}" y="${padT+chartH-3}" width="${bW}" height="3" rx="1.5" fill="rgba(255,255,255,0.07)"/>`;
-    }
-    // Day label
-    s+=`<text x="${cx}" y="${H-14}" text-anchor="middle" fill="${isSel?'#f0eff8':isToday?'#a899fa':'rgba(240,239,248,0.38)'}" font-size="9" font-weight="${isSel||isToday?'500':'400'}" font-family="DM Sans,sans-serif" style="cursor:pointer" onclick="switchDay('${DAYS[i]}')">${DAYS[i].slice(0,2)}</text>`;
-    // Task count small
-    if(d.total>0){
-      s+=`<text x="${cx}" y="${H-5}" text-anchor="middle" fill="${isSel?'rgba(240,239,248,0.6)':'rgba(240,239,248,0.25)'}" font-size="7.5" font-family="DM Sans,sans-serif">${d.wC+d.jC} tâche${d.wC+d.jC>1?'s':''}</text>`;
-    }
-    // Done progress bar
-    if(d.total>0){
-      s+=`<rect x="${padH+i*colW+3}" y="${H-11}" width="${colW-6}" height="2" rx="1" fill="rgba(255,255,255,0.06)"/>`;
-      s+=`<rect x="${padH+i*colW+3}" y="${H-11}" width="${(colW-6)*d.done/d.total}" height="2" rx="1" fill="${isSel?'#3ecfb2':'rgba(62,207,178,0.35)'}"/>`;
-    }
+  let sparkline='';
+  DAYS.forEach((day,i)=>{
+    const tDate=getTargetDate(day);
+    const dt=tasksForDay(day).filter(t=>isDue(t,tDate));
+    const dayTotalPts=dt.reduce((s,t)=>s+t.load,0);
+    const dayDonePts=dt.filter(t=>isDone(t.id,day)).reduce((s,t)=>s+t.load,0);
+    const pct=dayTotalPts?dayDonePts/dayTotalPts:0;
+    const isToday=i===todayIdx;
+    const h=dayTotalPts?Math.max(dayTotalPts/Math.max(...DAYS.map(d=>{
+      const td=getTargetDate(d);
+      return tasksForDay(d).filter(t=>isDue(t,td)).reduce((s,t)=>s+t.load,0);
+    }),1)*36,4):0;
+    sparkline+=`<div onclick="switchDay('${day}')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer">
+      <div style="height:40px;display:flex;align-items:flex-end;width:100%;justify-content:center">
+        <div style="position:relative;width:60%;height:${h}px;background:var(--surf2);border-radius:3px;overflow:hidden">
+          <div style="position:absolute;bottom:0;left:0;right:0;height:${pct*100}%;background:var(--teal);border-radius:3px"></div>
+        </div>
+      </div>
+      <div style="font-size:9px;color:${isToday?'var(--acc2)':'var(--txt3)'};font-weight:${isToday?'500':'400'}">${day.slice(0,2)}</div>
+    </div>`;
   });
-  s+=`</svg>`;
-  return `<div style="padding:10px 16px 0">${s}</div>`;
+  return `<div style="margin:14px 16px 0;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:16px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em">Cette semaine ensemble</div>
+        <div style="font-size:12px;color:var(--txt3);margin-top:2px">Du ${startStr} au ${endStr}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'DM Serif Display',serif;font-size:32px;line-height:1;color:var(--teal)">${pctPts}%</div>
+      </div>
+    </div>
+    <div style="height:8px;background:var(--surf2);border-radius:6px;overflow:hidden;margin-bottom:10px">
+      <div style="height:100%;background:linear-gradient(90deg,var(--acc),var(--teal));border-radius:6px;width:${pctPts}%;transition:width .5s"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--txt2);margin-bottom:12px">
+      <span><b style="color:var(--txt)">${doneCount}</b> / ${totalCount} tâches</span>
+      <span><b style="color:var(--txt)">${donePts}</b> / ${totalPts} pts de galère</span>
+    </div>
+    <div style="display:flex;gap:4px;padding-top:10px;border-top:1px solid var(--bdr)">
+      ${sparkline}
+    </div>
+  </div>`;
 }
 
 function renderAgenda(){
@@ -501,7 +549,7 @@ function renderAgenda(){
       <span class="dp-num" style="${isToday?'color:var(--acc2)':''}">${isToday?'•':i+1}</span>
       <span class="dp-dot"></span></div>`;
   });strip+='</div>';
-  const weekChart=renderWeekChart();
+  const weekChart=renderTeamProgress();
   const targetDate=getTargetDate(curDay);
   const allDayT=tasksForDay(curDay);
   const dueTasks=showAllTasks?allDayT:allDayT.filter(t=>isDue(t,targetDate));
@@ -711,43 +759,62 @@ function deleteCat(id){
 
 // ── PLANNING ───────────────────────────────────────────────────────────────
 function renderPlanning(){
-  const wk=weekKey(),wkData=weekPlans[wk];
+  const wk=weekKeyOffset(planWeekOffset);
+  const wkData=weekPlans[wk];
   const plan=wkData?.plan||null;
   const extras=wkData?.extras||{};
-  let html=`<div class="plan-header">
-    <div>
-      <div style="font-size:15px;font-weight:500">Semaine ${wk.split('-W')[1]}</div>
-      <div style="font-size:12px;color:var(--txt2);margin-top:2px">${plan?'Ajustable ci-dessous':'Aucun planning généré'}</div>
+  const validated=wkData?.validated||false;
+  const {start,end}=weekRange(planWeekOffset);
+  const startStr=start.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+  const endD=new Date(end);endD.setDate(endD.getDate()-1);
+  const endStr=endD.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+  const weekLabel=planWeekOffset===0?'Cette semaine':planWeekOffset===1?'Semaine prochaine':planWeekOffset===-1?'Semaine dernière':`Dans ${planWeekOffset} sem.`;
+  let html=`<div style="padding:14px 16px 0">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <button onclick="planWeekOffset--;render()" style="background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rs);color:var(--txt);font-family:'DM Sans',sans-serif;padding:8px 12px;cursor:pointer;font-size:14px">‹</button>
+      <div style="flex:1;text-align:center">
+        <div style="font-size:14px;font-weight:500">${weekLabel}</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px">${startStr} – ${endStr}${validated?' · ✓ validé':''}</div>
+      </div>
+      <button onclick="planWeekOffset++;render()" style="background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rs);color:var(--txt);font-family:'DM Sans',sans-serif;padding:8px 12px;cursor:pointer;font-size:14px">›</button>
     </div>
-    <button class="btn-auto" onclick="autoAssign()">✨ Auto-répartir</button>
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      <button onclick="autoAssign()" style="flex:1;background:var(--acc);border:none;border-radius:var(--rs);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:10px;cursor:pointer">✨ Auto-répartir</button>
+      ${plan?`<button onclick="validatePlan()" style="background:${validated?'rgba(62,207,178,0.15)':'var(--teal)'};border:1px solid ${validated?'rgba(62,207,178,0.4)':'var(--teal)'};border-radius:var(--rs);color:${validated?'var(--teal)':'#fff'};font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:10px 14px;cursor:pointer">${validated?'✓ Validé':'Valider'}</button>`:''}
+      ${plan?`<button onclick="clearPlan()" style="background:rgba(240,112,112,0.1);border:1px solid rgba(240,112,112,0.3);border-radius:var(--rs);color:var(--coral);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 14px;cursor:pointer">🗑 Effacer</button>`:''}
+    </div>
   </div>`;
 
   if(!plan){
     html+=`<div style="padding:32px 20px;text-align:center;color:var(--txt2)">
       <div style="font-size:36px;margin-bottom:12px">🗓</div>
       <div style="font-weight:500;margin-bottom:8px">Planning vide</div>
-      <div style="font-size:13px;line-height:1.6">Cliquez "Auto-répartir" pour générer la semaine automatiquement selon les préférences et la niveau de galère. Vous pouvez ensuite tout ajuster.</div>
+      <div style="font-size:13px;line-height:1.6">Cliquez "Auto-répartir" pour générer la répartition.<br>L'auto-répartition ne prend en compte que les tâches dues cette semaine selon leur fréquence et leur dernière réalisation.</div>
     </div>`;
     document.getElementById('view-planning').innerHTML=html;return;
   }
 
-  // Load balance summary
+  // Load summary based on plan + extras
   let wL=0,jL=0,wC=0,jC=0;
-  tasks.forEach(t=>{const a=plan[t.id];if(a==='skip')return;const w=t.load*(FREQ_W[t.freq]||.25);if(a==='william'){wL+=w;wC++}else if(a==='juliette'){jL+=w;jC++}});
-  (Object.values(extras)).forEach(dayExtras=>(dayExtras||[]).forEach(e=>{if(e.person==='william')wC++;else jC++}));
+  tasks.forEach(t=>{
+    const a=plan[t.id];if(!a||a==='skip') return;
+    const w=t.load*(FREQ_W[t.freq]||.25);
+    if(a==='william'){wL+=w;wC++}else if(a==='juliette'){jL+=w;jC++}
+  });
+  Object.values(extras).forEach(de=>(de||[]).forEach(e=>{if(e.person==='william')wC++;else if(e.person==='juliette')jC++;}));
   const tot=wL+jL||1;
-  html+=`<div style="padding:0 20px 14px;display:flex;gap:10px">
+  html+=`<div style="padding:0 16px 14px;display:flex;gap:10px">
     <div style="flex:1;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:13px">
-      <div class="avatar av-w" style="margin-bottom:8px">W</div>
+      <div class="avatar av-w" style="margin-bottom:8px">${settings.williamName[0]}</div>
       <div style="font-size:20px;font-weight:500">${wC}<span style="font-size:12px;color:var(--txt2);font-weight:400"> tâches</span></div>
-      <div style="font-size:11px;color:var(--txt2);margin-bottom:5px">${Math.round(wL*10)/10} pts charge</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(wL/tot*100)}%;background:var(--acc)"></div></div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:5px">${Math.round(wL*10)/10} pts</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(wL/tot*100)}%;background:var(--w)"></div></div>
     </div>
     <div style="flex:1;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:13px">
-      <div class="avatar av-j" style="margin-bottom:8px">J</div>
+      <div class="avatar av-j" style="margin-bottom:8px">${settings.julietteName[0]}</div>
       <div style="font-size:20px;font-weight:500">${jC}<span style="font-size:12px;color:var(--txt2);font-weight:400"> tâches</span></div>
-      <div style="font-size:11px;color:var(--txt2);margin-bottom:5px">${Math.round(jL*10)/10} pts charge</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(jL/tot*100)}%;background:var(--pink)"></div></div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:5px">${Math.round(jL*10)/10} pts</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(jL/tot*100)}%;background:var(--j)"></div></div>
     </div>
   </div>`;
 
@@ -756,10 +823,10 @@ function renderPlanning(){
     const dt=tasksForDay(day).filter(t=>plan[t.id]&&plan[t.id]!=='skip');
     const exs=extras[day]||[];
     if(!dt.length&&!exs.length&&planAddDay!==day) return;
-    const isToday=di===todayIdx;
+    const isTodayCurrentWk=di===todayIdx&&planWeekOffset===0;
     html+=`<div class="plan-day">
       <div class="plan-day-head">
-        <span>${isToday?'📌 ':''} ${DAYS_FULL[di]}</span>
+        <span>${isTodayCurrentWk?'📌 ':''} ${DAYS_FULL[di]}</span>
         <button class="add-btn" style="border:none;margin:0;padding:4px 8px;width:auto;background:none;font-size:12px;color:var(--acc2)" onclick="openPlanAdd('${day}')">+ Ajouter</button>
       </div>`;
     dt.forEach(t=>{
@@ -769,33 +836,28 @@ function renderPlanning(){
           <div class="plan-task-name">${t.name}</div>
           <div style="margin-top:3px">${dots(t.load)}</div>
         </div>
-        ${canSwap
-          ?`<div class="person-toggle">
-              <button class="pt-btn${a==='william'?' am':''}" onclick="swapPlan(${t.id},'william')">W</button>
-              <button class="pt-btn${a==='juliette'?' aj':''}" onclick="swapPlan(${t.id},'juliette')">J</button>
-            </div>`
-          :`<div class="avatar ${a==='william'?'av-w':'av-j'}">${a==='william'?'W':'J'}</div>`
-        }
+        ${canSwap?`<div class="person-toggle">
+            <button class="pt-btn${a==='william'?' am':''}" onclick="swapPlan(${t.id},'william')">${settings.williamName[0]}</button>
+            <button class="pt-btn${a==='juliette'?' aj':''}" onclick="swapPlan(${t.id},'juliette')">${settings.julietteName[0]}</button>
+          </div>`:`<div class="avatar ${a==='william'?'av-w':'av-j'}">${a==='william'?settings.williamName[0]:settings.julietteName[0]}</div>`}
         <button class="btn-x" onclick="removePlanTask(${t.id})" title="Retirer cette semaine">×</button>
       </div>`;
     });
-    // Manual extras
     exs.forEach((e,i)=>{
-      html+=`<div class="plan-task" style="background:rgba(124,106,247,.05)">
+      html+=`<div class="plan-task" style="background:var(--w-l)">
         <div style="flex:1;min-width:0">
-          <div class="plan-task-name">${e.name} <span style="font-size:10px;color:var(--txt3)">ajouté manuellement</span></div>
+          <div class="plan-task-name">${e.name} <span style="font-size:10px;color:var(--txt3)">ajouté</span></div>
         </div>
-        <div class="avatar ${e.person==='william'?'av-w':e.person==='juliette'?'av-j':'av-b'}">${e.person==='william'?'W':e.person==='juliette'?'J':'W+J'}</div>
-        <button class="btn-x" onclick="removePlanExtra('${day}',${i})" title="Supprimer">×</button>
+        <div class="avatar ${e.person==='william'?'av-w':e.person==='juliette'?'av-j':'av-b'}">${e.person==='william'?settings.williamName[0]:e.person==='juliette'?settings.julietteName[0]:settings.williamName[0]+'+'+settings.julietteName[0]}</div>
+        <button class="btn-x" onclick="removePlanExtra('${day}',${i})">×</button>
       </div>`;
     });
-    // Add form for this day
     if(planAddDay===day){
       html+=`<div class="plan-add-form" onclick="event.stopPropagation()">
         <input class="fi" id="pa_name" placeholder="Nom de la tâche à ajouter…">
         <div class="plan-add-who" id="pa_who">
-          <button class="paw sw" onclick="pickPAW(this,'william')">William</button>
-          <button class="paw" onclick="pickPAW(this,'juliette')">Juliette</button>
+          <button class="paw sw" onclick="pickPAW(this,'william')">${settings.williamName}</button>
+          <button class="paw" onclick="pickPAW(this,'juliette')">${settings.julietteName}</button>
           <button class="paw" onclick="pickPAW(this,'both')">Les deux</button>
         </div>
         <div class="plan-add-btns">
@@ -809,30 +871,39 @@ function renderPlanning(){
   if(planAddDay) setTimeout(()=>document.getElementById('pa_name')?.focus(),60);
 }
 
-function ensureWkData(){
-  const wk=weekKey();
-  if(!weekPlans[wk]) weekPlans[wk]={plan:{},extras:{}};
-  if(!weekPlans[wk].plan) weekPlans[wk].plan={};
-  if(!weekPlans[wk].extras) weekPlans[wk].extras={};
-  return weekPlans[wk];
+function clearPlan(){
+  const wk=weekKeyOffset(planWeekOffset);
+  delete weekPlans[wk];
+  save();toast('Planning effacé');renderPlanning();
 }
+function validatePlan(){
+  const wk=weekKeyOffset(planWeekOffset);
+  if(!weekPlans[wk]) return;
+  weekPlans[wk].validated=!weekPlans[wk].validated;
+  save();toast(weekPlans[wk].validated?'Planning validé ✓':'Validation retirée');
+  renderPlanning();
+}
+
 function autoAssign(){
-  const wk=weekKey(),plan={};
+  const wk=weekKeyOffset(planWeekOffset),plan={};
   let wS=0,jS=0;
   const fw=t=>t.load*(FREQ_W[t.freq]||.25);
-  tasks.filter(t=>t.who==='william').forEach(t=>{plan[t.id]='william';wS+=fw(t)});
-  tasks.filter(t=>t.who==='juliette').forEach(t=>{plan[t.id]='juliette';jS+=fw(t)});
-  tasks.filter(t=>t.who==='pref-w').sort((a,b)=>b.load-a.load).forEach(t=>{
+  const eligible=tasks.filter(t=>isDueInWeek(t,planWeekOffset));
+  eligible.filter(t=>t.who==='william').forEach(t=>{plan[t.id]='william';wS+=fw(t)});
+  eligible.filter(t=>t.who==='juliette').forEach(t=>{plan[t.id]='juliette';jS+=fw(t)});
+  eligible.filter(t=>t.who==='pref-w').sort((a,b)=>b.load-a.load).forEach(t=>{
     if(wS<=jS*1.35){plan[t.id]='william';wS+=fw(t)}else{plan[t.id]='juliette';jS+=fw(t)}
   });
-  tasks.filter(t=>t.who==='pref-j').sort((a,b)=>b.load-a.load).forEach(t=>{
+  eligible.filter(t=>t.who==='pref-j').sort((a,b)=>b.load-a.load).forEach(t=>{
     if(jS<=wS*1.35){plan[t.id]='juliette';jS+=fw(t)}else{plan[t.id]='william';wS+=fw(t)}
   });
-  tasks.filter(t=>t.who==='both').sort((a,b)=>b.load-a.load).forEach(t=>{
+  eligible.filter(t=>t.who==='both').sort((a,b)=>b.load-a.load).forEach(t=>{
     if(wS<=jS){plan[t.id]='william';wS+=fw(t)}else{plan[t.id]='juliette';jS+=fw(t)}
   });
-  const wkd=ensureWkData();wkd.plan=plan;
-  save();toast('Planning généré !');renderPlanning();
+  if(!weekPlans[wk]) weekPlans[wk]={plan:{},extras:{},validated:false};
+  weekPlans[wk].plan=plan;
+  weekPlans[wk].validated=false;
+  save();toast(`Planning généré : ${eligible.length} tâche${eligible.length>1?'s':''} dues`);renderPlanning();
 }
 function swapPlan(taskId,person){
   const wkd=ensureWkData();wkd.plan[taskId]=person;save();renderPlanning();
@@ -960,6 +1031,69 @@ function renderStats(){
 }
 function setStat(p){statPeriod=p;renderStats()}
 
+
+function renderSettings(){
+  const wColors=['#7c6af7','#5b8def','#3ecfb2','#6bcb77','#f5a623','#f07070','#e87db8','#9b59b6'];
+  const jColors=['#7c6af7','#5b8def','#3ecfb2','#6bcb77','#f5a623','#f07070','#e87db8','#9b59b6'];
+  let html=`<div style="padding:16px 16px 0">
+    <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Personne 1</div>
+      <label class="fl">Nom</label>
+      <input class="fi mg-b" id="set_wname" value="${settings.williamName}" placeholder="William">
+      <label class="fl">Couleur</label>
+      <div class="swatches">
+        ${wColors.map(c=>`<div class="swatch${c===settings.williamColor?' selected':''}" style="background:${c}" onclick="pickSettingColor('w','${c}')"></div>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+        <div class="avatar av-w" style="width:32px;height:32px;font-size:13px">${settings.williamName[0]}</div>
+        <span style="font-size:13px;color:var(--txt2)">Aperçu</span>
+      </div>
+    </div>
+
+    <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Personne 2</div>
+      <label class="fl">Nom</label>
+      <input class="fi mg-b" id="set_jname" value="${settings.julietteName}" placeholder="Juliette">
+      <label class="fl">Couleur</label>
+      <div class="swatches">
+        ${jColors.map(c=>`<div class="swatch${c===settings.julietteColor?' selected':''}" style="background:${c}" onclick="pickSettingColor('j','${c}')"></div>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+        <div class="avatar av-j" style="width:32px;height:32px;font-size:13px">${settings.julietteName[0]}</div>
+        <span style="font-size:13px;color:var(--txt2)">Aperçu</span>
+      </div>
+    </div>
+
+    <button onclick="saveSettings()" style="width:100%;background:var(--acc);border:none;border-radius:var(--rs);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:12px;cursor:pointer;margin-bottom:14px">
+      💾 Enregistrer les réglages
+    </button>
+
+    <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;font-size:12px;color:var(--txt2);line-height:1.5">
+      💡 Vos réglages sont synchronisés entre tous les appareils via Firebase.
+    </div>
+  </div>`;
+  document.getElementById('view-settings').innerHTML=html;
+}
+
+function pickSettingColor(who,color){
+  if(who==='w') settings.williamColor=color;
+  else settings.julietteColor=color;
+  applyColors();
+  renderSettings();
+}
+
+function saveSettings(){
+  const wn=document.getElementById('set_wname')?.value.trim();
+  const jn=document.getElementById('set_jname')?.value.trim();
+  if(wn) settings.williamName=wn;
+  if(jn) settings.julietteName=jn;
+  applyColors();
+  save();
+  toast('Réglages enregistrés !');
+  render();
+}
+
+
 // ── INIT ───────────────────────────────────────────────────────────────────
 load();
 // Try to load from Firebase on first open
@@ -972,6 +1106,7 @@ if(window._firebaseReady){
       if(d.completions) completions=d.completions;
       if(d.cats) cats=d.cats;
       if(d.manualLastDone) manualLastDone=d.manualLastDone;
+      if(d.settings){ settings={...settings,...d.settings}; applyColors(); }
     }
     render();
   }).catch(()=>render());
