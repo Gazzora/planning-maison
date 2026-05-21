@@ -381,8 +381,13 @@ function isDueInWeek(task,offset=0){
   const{start,end}=weekRange(offset);
   const last=getLastDone(task.id);
   if(!last) return true;
-  const next=new Date(last);
-  next.setDate(next.getDate()+(FREQ_DAYS[task.freq]||1));
+  const freqDays=FREQ_DAYS[task.freq]||1;
+  // Advance "next due" date until it's within or past the target week
+  let next=new Date(last);
+  next.setDate(next.getDate()+freqDays);
+  while(next<start){
+    next.setDate(next.getDate()+freqDays);
+  }
   return next<end;
 }
 function weekKey(d=new Date()){
@@ -830,16 +835,16 @@ function renderPlanning(){
         <button class="add-btn" style="border:none;margin:0;padding:4px 8px;width:auto;background:none;font-size:12px;color:var(--acc2)" onclick="openPlanAdd('${day}')">+ Ajouter</button>
       </div>`;
     dt.forEach(t=>{
-      const a=plan[t.id],canSwap=(t.who==='both'||t.who==='pref-w'||t.who==='pref-j');
+      const a=plan[t.id];
       html+=`<div class="plan-task">
         <div style="flex:1;min-width:0">
           <div class="plan-task-name">${t.name}</div>
           <div style="margin-top:3px">${dots(t.load)}</div>
         </div>
-        ${canSwap?`<div class="person-toggle">
-            <button class="pt-btn${a==='william'?' am':''}" onclick="swapPlan(${t.id},'william')">${settings.williamName[0]}</button>
-            <button class="pt-btn${a==='juliette'?' aj':''}" onclick="swapPlan(${t.id},'juliette')">${settings.julietteName[0]}</button>
-          </div>`:`<div class="avatar ${a==='william'?'av-w':'av-j'}">${a==='william'?settings.williamName[0]:settings.julietteName[0]}</div>`}
+        <div class="person-toggle">
+          <button class="pt-btn${a==='william'?' am':''}" onclick="swapPlan(${t.id},'william')">${settings.williamName[0]}</button>
+          <button class="pt-btn${a==='juliette'?' aj':''}" onclick="swapPlan(${t.id},'juliette')">${settings.julietteName[0]}</button>
+        </div>
         <button class="btn-x" onclick="removePlanTask(${t.id})" title="Retirer cette semaine">×</button>
       </div>`;
     });
@@ -884,11 +889,11 @@ function validatePlan(){
   renderPlanning();
 }
 
-function autoAssign(){
-  const wk=weekKeyOffset(planWeekOffset),plan={};
+function generateWeekPlan(offset){
+  const wk=weekKeyOffset(offset),plan={};
   let wS=0,jS=0;
   const fw=t=>t.load*(FREQ_W[t.freq]||.25);
-  const eligible=tasks.filter(t=>isDueInWeek(t,planWeekOffset));
+  const eligible=tasks.filter(t=>isDueInWeek(t,offset));
   eligible.filter(t=>t.who==='william').forEach(t=>{plan[t.id]='william';wS+=fw(t)});
   eligible.filter(t=>t.who==='juliette').forEach(t=>{plan[t.id]='juliette';jS+=fw(t)});
   eligible.filter(t=>t.who==='pref-w').sort((a,b)=>b.load-a.load).forEach(t=>{
@@ -903,7 +908,18 @@ function autoAssign(){
   if(!weekPlans[wk]) weekPlans[wk]={plan:{},extras:{},validated:false};
   weekPlans[wk].plan=plan;
   weekPlans[wk].validated=false;
-  save();toast(`Planning généré : ${eligible.length} tâche${eligible.length>1?'s':''} dues`);renderPlanning();
+  return eligible.length;
+}
+
+function autoAssign(){
+  // Generate plans for displayed week + next 3 weeks (4 weeks total)
+  let totalTasks=0;
+  for(let i=0;i<4;i++){
+    totalTasks+=generateWeekPlan(planWeekOffset+i);
+  }
+  save();
+  toast(`Planning généré sur 4 semaines (${totalTasks} tâches au total)`);
+  renderPlanning();
 }
 function swapPlan(taskId,person){
   const wkd=ensureWkData();wkd.plan[taskId]=person;save();renderPlanning();
@@ -967,10 +983,9 @@ function renderStats(){
       .map(([id,n])=>({name:tasks.find(t=>t.id==id)?.name||'?',n}));
   }
   const pl={semaine:'cette semaine',mois:'ce mois',annee:'cette année'}[statPeriod];
-  const resetBtn=`<div style="margin-bottom:14px;background:rgba(240,112,112,0.08);border:1px solid rgba(240,112,112,0.2);border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
-    <span style="font-size:13px;color:rgba(240,239,248,0.6)">Effacer les coches ${pl}</span>
-    <button onclick="resetStats()" style="background:rgba(240,112,112,0.15);border:1px solid rgba(240,112,112,0.35);border-radius:var(--rs);color:var(--coral);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:8px 14px;cursor:pointer;flex-shrink:0">
-      🗑 Remise à zéro
+  const resetBtn=`<div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+    <button onclick="resetStats()" style="background:rgba(240,112,112,0.1);border:1px solid rgba(240,112,112,0.3);border-radius:var(--rs);color:var(--coral);font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 14px;cursor:pointer">
+      🗑 Effacer les coches ${pl}
     </button></div>`;
   const tabs=['semaine','mois','annee'].map(p=>`<button class="ptab${statPeriod===p?' active':''}" onclick="setStat('${p}')">${{semaine:'Semaine',mois:'Mois',annee:'Année'}[p]}</button>`).join('');
   let html=`<div class="stats-wrap"><div class="period-tabs">${tabs}</div>`;
