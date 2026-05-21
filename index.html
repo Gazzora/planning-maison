@@ -400,17 +400,28 @@ function isDone(id,day=curDay){const td=getTargetDate(day).toISOString().slice(0
 function getWkData(){return weekPlans[weekKey()]||{plan:{},extras:{}}}
 function getPlan(){return getWkData().plan}
 function getExtras(){return getWkData().extras}
-function assigned(id){
+function assigned(id,day){
   const wkd=getWkData();
-  if(wkd.validated){
-    const p=wkd.plan?.[id];
-    if(p&&p!=='skip') return p;
+  const planned=wkd.plan?.[id];
+  let result=null;
+  if(planned&&planned!=='skip'){
+    result=planned;
+  } else {
+    const t=tasks.find(x=>x.id===id);
+    if(!t) return 'william';
+    if(t.who==='william'||t.who==='pref-w') result='william';
+    else if(t.who==='juliette'||t.who==='pref-j') result='juliette';
+    else result='william'; // 'both' defaults to william (avoid W+J display)
   }
-  const t=tasks.find(x=>x.id===id);
-  if(!t) return 'william';
-  if(t.who==='william'||t.who==='pref-w') return 'william';
-  if(t.who==='juliette'||t.who==='pref-j') return 'juliette';
-  return 'both';
+  // Respect per-day exclusions if day is provided
+  if(day){
+    const t=tasks.find(x=>x.id===id);
+    if(t&&isExcluded(t,result,day)){
+      const other=result==='william'?'juliette':'william';
+      if(!isExcluded(t,other,day)) result=other;
+    }
+  }
+  return result;
 }
 
 function getLastDone(taskId){
@@ -423,7 +434,15 @@ function getLastDone(taskId){
 function isDue(task,refDate=new Date()){
   const days=FREQ_DAYS[task.freq]||1;
   const last=getLastDone(task.id);
-  if(!last) return true;
+  if(!last){
+    // Never done: daily always shows, non-daily only on first allowed day
+    if(days<=1) return true;
+    const taskDays=DAY_SETS[task.days]||DAY_SETS.tous;
+    const dayShort=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][refDate.getDay()];
+    if(days<=7) return dayShort===taskDays[0];
+    // Monthly+: first allowed day in first week of month
+    return dayShort===taskDays[0]&&refDate.getDate()<=7;
+  }
   return Math.floor((refDate-new Date(last))/864e5)>=days;
 }
 function getTargetDate(day){
@@ -447,11 +466,17 @@ function nextDueStr(task){
   if(diff<365) return 'Dans '+Math.round(diff/30)+' mois';
   return 'Dans '+Math.round(diff/365)+' an(s)';
 }
+const DAY_LONG={Lun:'lundi',Mar:'mardi',Mer:'mercredi',Jeu:'jeudi',Ven:'vendredi',Sam:'samedi',Dim:'dimanche'};
 function canPersonDo(task,person){
   const p=person==='william'?'w':'j';
   const excl=task.excl?.[p]||[];
+  if(!excl.length) return true;
   const taskDays=DAY_SETS[task.days]||DAY_SETS.tous;
-  return taskDays.some(d=>!excl.includes(d.toLowerCase()));
+  return taskDays.some(d=>!excl.includes(DAY_LONG[d]));
+}
+function isExcluded(task,person,day){
+  const p=person==='william'?'w':'j';
+  return task.excl?.[p]?.includes(DAY_LONG[day])||false;
 }
 function dots(n){
   let h='<div class="load-dots">';
@@ -589,7 +614,7 @@ function renderAgenda(){
         <div style="display:flex;align-items:center"><span style="font-size:11px;color:var(--txt3)">${cd}/${ct.length}</span><span class="chev">›</span></div>
       </div><div class="task-list">`;
     ct.forEach(t=>{
-      const done=isDone(t.id),who=assigned(t.id);
+      const done=isDone(t.id),who=assigned(t.id,curDay);
       secs+=`<div class="task-card${done?' done':''}" onclick="toggleDone(${t.id})">
         <div class="tcheck"><svg class="tcheck-svg" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <span class="tname">${t.name}</span>
@@ -608,7 +633,7 @@ function renderAgenda(){
       secs+=`<div class="task-card" style="opacity:.45;cursor:default">
         <div class="tcheck"></div>
         <span class="tname">${t.name}</span>
-        <div class="tright">${nd?`<span style="font-size:10px;color:var(--teal);background:rgba(62,207,178,.1);padding:2px 7px;border-radius:20px">${nd}</span>`:''}${avFor(assigned(t.id))}</div></div>`;
+        <div class="tright">${nd?`<span style="font-size:10px;color:var(--teal);background:rgba(62,207,178,.1);padding:2px 7px;border-radius:20px">${nd}</span>`:''}${avFor(assigned(t.id,curDay))}</div></div>`;
     });secs+='</div></div>';
   }
   document.getElementById('view-agenda').innerHTML=strip+weekChart+prog+secs;
@@ -883,15 +908,21 @@ function renderPlanning(){
         ${isPast?'<span style=\"color:var(--txt3);font-size:12px\">▲ replier</span>':`<button class="add-btn" style="border:none;margin:0;padding:4px 8px;width:auto;background:none;font-size:12px;color:var(--acc2)" onclick="openPlanAdd('${day}')">+ Ajouter</button>`}
       </div>`;
     dt.forEach(t=>{
-      const a=plan[t.id];
+      let a=plan[t.id];
+      // Apply per-day exclusion
+      if(a&&isExcluded(t,a,day)){
+        const other=a==='william'?'juliette':'william';
+        if(!isExcluded(t,other,day)) a=other;
+      }
+      const wExc=isExcluded(t,'william',day),jExc=isExcluded(t,'juliette',day);
       html+=`<div class="plan-task">
         <div style="flex:1;min-width:0">
-          <div class="plan-task-name">${t.name}</div>
+          <div class="plan-task-name">${t.name}${wExc||jExc?` <span style="font-size:9px;color:var(--coral);background:rgba(240,112,112,0.1);padding:1px 5px;border-radius:8px;margin-left:4px">${wExc?'⊘'+settings.williamName[0]:''}${jExc?'⊘'+settings.julietteName[0]:''}</span>`:''}</div>
           <div style="margin-top:3px">${dots(t.load)}</div>
         </div>
         <div class="person-toggle">
-          <button class="pt-btn${a==='william'?' am':''}" onclick="swapPlan(${t.id},'william')">${settings.williamName[0]}</button>
-          <button class="pt-btn${a==='juliette'?' aj':''}" onclick="swapPlan(${t.id},'juliette')">${settings.julietteName[0]}</button>
+          <button class="pt-btn${a==='william'?' am':''}" ${wExc?'disabled style="opacity:0.3;cursor:not-allowed"':''} onclick="swapPlan(${t.id},'william')">${settings.williamName[0]}</button>
+          <button class="pt-btn${a==='juliette'?' aj':''}" ${jExc?'disabled style="opacity:0.3;cursor:not-allowed"':''} onclick="swapPlan(${t.id},'juliette')">${settings.julietteName[0]}</button>
         </div>
         <button class="btn-x" onclick="removePlanTask(${t.id})" title="Retirer cette semaine">×</button>
       </div>`;
