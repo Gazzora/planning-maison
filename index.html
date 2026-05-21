@@ -150,11 +150,51 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-
 .empty{text-align:center;padding:48px 20px;color:var(--txt2);font-size:14px;line-height:1.6}
 .empty-icon{font-size:36px;margin-bottom:12px;opacity:.4}
 </style>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAlGin2f32soy5dJdJ5TPLCg8V2qwJkufA",
+    authDomain: "planning-maison-2c244.firebaseapp.com",
+    projectId: "planning-maison-2c244",
+    storageBucket: "planning-maison-2c244.firebasestorage.app",
+    messagingSenderId: "986154499696",
+    appId: "1:986154499696:web:98432f4545f9ac07dcbeb5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const DOC = doc(db, 'planning', 'shared');
+
+  // Expose sync functions to global scope
+  window._db = db;
+  window._DOC = DOC;
+  window._setDoc = setDoc;
+  window._onSnapshot = onSnapshot;
+  window._getDoc = getDoc;
+  window._firebaseReady = true;
+
+  // Listen for remote changes
+  onSnapshot(DOC, (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    // Only update if change came from another device
+    if (data._updatedBy !== window._deviceId) {
+      if (data.tasks) window._remoteUpdate('tasks', data.tasks);
+      if (data.weekPlans) window._remoteUpdate('weekPlans', data.weekPlans);
+      if (data.completions) window._remoteUpdate('completions', data.completions);
+      if (data.cats) window._remoteUpdate('cats', data.cats);
+      if (data.manualLastDone) window._remoteUpdate('manualLastDone', data.manualLastDone);
+    }
+  });
+</script>
 </head>
 <body>
 <header class="app-header">
   <div class="app-title">Planning Maison</div>
-  <div class="app-sub" id="hdate"></div>
+  <div style="text-align:right"><div class="app-sub" id="hdate"></div><div id="syncDot" style="font-size:10px;color:var(--teal);margin-top:2px">🔄 sync</div></div>
 </header>
 <div id="view-agenda" class="view active"></div>
 <div id="view-tasks" class="view"></div>
@@ -255,6 +295,11 @@ function load(){
   manualLastDone=JSON.parse(localStorage.getItem('pm4_mld')||'{}');
   // Migrate old 'moi' → 'william'
   tasks.forEach(t=>{if(t.who==='moi')t.who='william'});
+  // Device ID for sync conflict detection
+  if(!localStorage.getItem('pm4_did')){
+    localStorage.setItem('pm4_did', Math.random().toString(36).slice(2));
+  }
+  window._deviceId = localStorage.getItem('pm4_did');
 }
 function save(){
   localStorage.setItem('pm4_t',JSON.stringify(tasks));
@@ -264,6 +309,36 @@ function save(){
   localStorage.setItem('pm4_n',nextId);
   localStorage.setItem('pm4_nc',nextCatId);
   localStorage.setItem('pm4_mld',JSON.stringify(manualLastDone));
+  syncToFirebase();
+}
+
+function syncToFirebase(){
+  if(!window._firebaseReady) return;
+  window._setDoc(window._DOC, {
+    tasks,cats,weekPlans,completions,manualLastDone,
+    _updatedBy: window._deviceId,
+    _updatedAt: Date.now()
+  }).catch(e=>console.warn('Sync error:',e));
+}
+
+window._remoteUpdate = function(key, value){
+  if(key==='tasks'){ tasks=value; }
+  else if(key==='weekPlans'){ weekPlans=value; }
+  else if(key==='completions'){ completions=value; }
+  else if(key==='cats'){ cats=value; }
+  else if(key==='manualLastDone'){ manualLastDone=value; }
+  // Update localStorage too
+  const lsKey={'tasks':'pm4_t','weekPlans':'pm4_p','completions':'pm4_c','cats':'pm4_cats','manualLastDone':'pm4_mld'}[key];
+  if(lsKey) localStorage.setItem(lsKey, JSON.stringify(value));
+  render();
+  showSyncToast();
+};
+
+function showSyncToast(){
+  const t=document.getElementById('toast');
+  t.textContent='🔄 Synchronisé avec l\'autre appareil';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 
 // ── UTILS ──────────────────────────────────────────────────────────────────
@@ -886,7 +961,23 @@ function renderStats(){
 function setStat(p){statPeriod=p;renderStats()}
 
 // ── INIT ───────────────────────────────────────────────────────────────────
-load();render();
+load();
+// Try to load from Firebase on first open
+if(window._firebaseReady){
+  window._getDoc(window._DOC).then(snap=>{
+    if(snap.exists()){
+      const d=snap.data();
+      if(d.tasks) tasks=d.tasks;
+      if(d.weekPlans) weekPlans=d.weekPlans;
+      if(d.completions) completions=d.completions;
+      if(d.cats) cats=d.cats;
+      if(d.manualLastDone) manualLastDone=d.manualLastDone;
+    }
+    render();
+  }).catch(()=>render());
+} else {
+  render();
+}
 setInterval(render,60000);
 </script>
 </body>
